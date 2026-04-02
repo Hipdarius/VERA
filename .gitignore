@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# uv
+.uv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Project artifacts
+runs/
+data/cache/
+data/*.csv
+!data/.gitkeep
+*.npz
+!data/usgs_endmembers.npz.example
+
+# Models / quant outputs
+*.onnx
+*.tflite
+
+# Streamlit
+.streamlit/secrets.toml
