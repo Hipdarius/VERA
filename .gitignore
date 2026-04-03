@@ -33,6 +33,23 @@ data/*.csv
 # Models / quant outputs
 *.onnx
 *.tflite
+*.pt
+*.pth
+*.pkl
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# OS X
+.DS_Store
+
+# C++ / Build (if any)
+build/
+dist/
+*.so
+*.pyd
+*.dll
