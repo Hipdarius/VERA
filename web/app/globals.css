@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: #05060a;
+  color: #e2e8f0;
+  font-feature-settings: "ss01", "cv11";
+}
+
+/* Subtle starfield background painted via radial gradients. Cheap and
+   does not require image assets. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, 0.45) 50%, transparent 51%),
+    radial-gradient(1px 1px at 24% 67%, rgba(255, 255, 255, 0.30) 50%, transparent 51%),
+    radial-gradient(1px 1px at 41% 28%, rgba(255, 255, 255, 0.55) 50%, transparent 51%),
+    radial-gradient(1px 1px at 58% 82%, rgba(255, 255, 255, 0.25) 50%, transparent 51%),
+    radial-gradient(1px 1px at 73% 14%, rgba(255, 255, 255, 0.50) 50%, transparent 51%),
+    radial-gradient(1px 1px at 86% 47%, rgba(255, 255, 255, 0.30) 50%, transparent 51%),
+    radial-gradient(1px 1px at 92% 73%, rgba(255, 255, 255, 0.45) 50%, transparent 51%);
+  z-index: 0;
+}
+
+/* Scrollbar styling for the deep dark theme. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0d14;
+}
+::-webkit-scrollbar-thumb {
+  background: #1f2533;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2a3142;
+}
+
+@layer components {
+  .panel {
+    @apply rounded-xl border border-cyan-glow/15 bg-void-800/70 backdrop-blur-sm;
+    box-shadow: 0 0 24px rgba(34, 211, 238, 0.08);
+  }
+
+  .panel-header {
+    @apply flex items-center gap-2 border-b border-cyan-glow/10 px-4 py-3 text-xs font-mono uppercase tracking-widest text-cyan-glow/80;
+  }
+
+  .panel-body {
+    @apply px-4 py-4 sm:px-6 sm:py-5;
+  }
+
+  .stat-label {
+    @apply text-[10px] font-mono uppercase tracking-widest text-slate-400;
+  }
+
+  .stat-value {
+    @apply font-mono text-2xl font-semibold text-cyan-glow;
+  }
+}

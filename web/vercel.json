@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "functions": {
+    "api/predict.py": {
+      "runtime": "@vercel/python@4.3.0",
+      "memory": 1024,
+      "maxDuration": 15,
+      "includeFiles": "api/model.onnx"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/meta", "destination": "/api/predict" },
+    { "source": "/api/predict/demo", "destination": "/api/predict" },
+    { "source": "/api/predict/healthz", "destination": "/api/predict" }
+  ]
+}
