@@ -130,7 +130,7 @@ def test_cnn_smoke_one_epoch(synth_csv: Path, tmp_path: Path):
 
     manifest = json.loads((out / "run.json").read_text())
     assert manifest["model"] == "cnn"
-    assert manifest["epochs"] == 1
+    assert manifest["epochs_completed"] == 1
     # 1-epoch accuracy is unconstrained — only require it's a real number.
     assert isinstance(manifest["metrics"]["test"]["top1_acc"], float)
 

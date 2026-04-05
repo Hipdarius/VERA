@@ -287,62 +287,6 @@ def synth_sample(
     rng: np.random.Generator,
     noise: NoiseConfig | None = None,
 ) -> list[Measurement]:
-    cfg = noise or NoiseConfig()
-    fractions = fractions_for_class(mineral_class, rng)
-    degradation_mask = sensor_degradation_mask(rng, cfg)
-    out: list[Measurement] = []
-    for _ in range(n_measurements):
-        out.append(
-            synth_measurement(
-                sample_id=sample_id,
-                mineral_class=mineral_class,
-                fractions=fractions,
-                endmembers=endmembers,
-                rng=rng,
-                noise=cfg,
-                degradation_mask=degradation_mask,
-            )
-        )
-    return out
-
-
-def synth_dataset(
-    endmembers: Endmembers,
-    *,
-    n_samples: int,
-    measurements_per_sample: int,
-    seed: int = 0,
-    classes: Iterable[str] = MINERAL_CLASSES,
-    noise: NoiseConfig | None = None,
-) -> list[Measurement]:
-    rng = np.random.default_rng(seed)
-    classes = tuple(classes)
-    out: list[Measurement] = []
-    for i in range(n_samples):
-        klass = classes[i % len(classes)]
-        sample_id = f"S{i:04d}_{klass}"
-        out.extend(
-            synth_sample(
-                sample_id=sample_id,
-                mineral_class=klass,
-                endmembers=endmembers,
-                n_measurements=measurements_per_sample,
-                rng=rng,
-                noise=noise,
-            )
-        )
-    return out
-
-
-def synth_sample(
-    sample_id: str,
-    mineral_class: str,
-    endmembers: Endmembers,
-    *,
-    n_measurements: int,
-    rng: np.random.Generator,
-    noise: NoiseConfig | None = None,
-) -> list[Measurement]:
     """Generate ``n_measurements`` measurements for one (sample, class) pair.
 
     Composition is fixed once per sample so that all measurements of the

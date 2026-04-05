@@ -94,7 +94,43 @@ def export_onnx(model: RegoscanCNN, out_path: Path, *, opset: int = 17) -> Path:
 # ---------------------------------------------------------------------------
 
 
-def _try_tflite_real(onnx_path: Path, tflite_path: Path) -> bool:
+def _build_calibration_data(
+    calibration_data: np.ndarray | None, n_samples: int = 100
+) -> np.ndarray:
+    """Return a (N, 1, K) float32 array suitable for TFLite INT8 calibration.
+
+    Parameters
+    ----------
+    calibration_data:
+        Optional real training spectra of shape ``(N, K)`` where
+        ``K == N_FEATURES_TOTAL``.  When *None*, synthetic spectra are
+        generated via :func:`regoscan.inference.synth_demo_features`.
+    n_samples:
+        Number of synthetic samples to generate when *calibration_data*
+        is not provided.
+    """
+    if calibration_data is not None:
+        data = np.asarray(calibration_data, dtype=np.float32)
+        if data.ndim == 2:
+            data = data[:, np.newaxis, :]  # (N, K) -> (N, 1, K)
+        return data
+
+    # Fall back to physically motivated synthetic spectra instead of
+    # random noise — gives a much better calibration distribution.
+    from regoscan.inference import synth_demo_features  # noqa: WPS433
+
+    rows: list[np.ndarray] = []
+    for seed in range(n_samples):
+        feat = synth_demo_features(seed=seed)["features"]
+        rows.append(feat)
+    return np.stack(rows, axis=0).astype(np.float32)[:, np.newaxis, :]
+
+
+def _try_tflite_real(
+    onnx_path: Path,
+    tflite_path: Path,
+    calibration_data: np.ndarray | None = None,
+) -> bool:
     """Best-effort TF-based conversion. Returns True on success."""
     try:
         import tensorflow as tf  # noqa: F401
@@ -113,11 +149,15 @@ def _try_tflite_real(onnx_path: Path, tflite_path: Path) -> bool:
         tf_rep.export_graph(str(saved_model_dir))
         converter = tf.lite.TFLiteConverter.from_saved_model(str(saved_model_dir))
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
-        # Representative dataset for int8 calibration: random spectra in [0, 1]
+
+        # Representative dataset for int8 calibration — use real or
+        # synthetic spectra instead of random noise.
+        cal = _build_calibration_data(calibration_data)
+
         def _rep():
-            for _ in range(64):
-                x = np.random.uniform(0.0, 1.0, size=(1, 1, N_FEATURES_TOTAL)).astype(np.float32)
-                yield [x]
+            for i in range(cal.shape[0]):
+                yield [cal[i : i + 1]]
+
         converter.representative_dataset = _rep
         converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
         converter.inference_input_type = tf.int8
