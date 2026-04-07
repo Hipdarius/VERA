@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CLASS_LABELS, type ClassProbability } from "@/lib/types";
+import { useTheme } from "./ThemeProvider";
 
 export function ProbabilityBars({
   probabilities,
@@ -10,15 +11,20 @@ export function ProbabilityBars({
   probabilities: ClassProbability[] | null;
   predictedClass: string | null;
 }) {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
+
   if (!probabilities) {
     return (
-      <div className="flex h-40 items-center justify-center font-mono text-xs uppercase tracking-widest text-slate-500">
-        awaiting classifier…
+      <div
+        className="flex h-40 items-center justify-center font-mono text-xs uppercase tracking-widest"
+        style={{ color: isLight ? "#94a3b8" : "#64748b" }}
+      >
+        awaiting classifier\u2026
       </div>
     );
   }
 
-  // Sort descending so the most probable class always renders on top.
   const sorted = [...probabilities].sort(
     (a, b) => b.probability - a.probability
   );
@@ -28,27 +34,34 @@ export function ProbabilityBars({
       {sorted.map((cls) => {
         const isTop = cls.name === predictedClass;
         const pct = (cls.probability * 100).toFixed(1);
-        const tone = isTop
-          ? "from-amber-glow/80 to-amber-glow/30"
-          : "from-cyan-glow/70 to-cyan-glow/10";
+
+        const topColor = isLight ? "#d97706" : "#fbbf24";
+        const normalColor = isLight ? "#0284c7" : "#22d3ee";
+        const labelColor = isTop ? topColor : (isLight ? "#64748b" : "#94a3b8");
+        const barGrad = isTop
+          ? (isLight ? "linear-gradient(to right, rgba(217, 119, 6, 0.8), rgba(217, 119, 6, 0.3))" : "linear-gradient(to right, rgba(251, 191, 36, 0.8), rgba(251, 191, 36, 0.3))")
+          : (isLight ? "linear-gradient(to right, rgba(2, 132, 199, 0.7), rgba(2, 132, 199, 0.1))" : "linear-gradient(to right, rgba(34, 211, 238, 0.7), rgba(34, 211, 238, 0.1))");
+
         return (
           <li key={cls.name}>
             <div className="mb-1 flex items-center justify-between font-mono text-[11px] uppercase tracking-widest">
-              <span className={isTop ? "text-amber-glow" : "text-slate-400"}>
+              <span style={{ color: labelColor }}>
                 {CLASS_LABELS[cls.name] ?? cls.name}
               </span>
-              <span
-                className={isTop ? "text-amber-glow" : "text-slate-400"}
-              >
+              <span style={{ color: labelColor }}>
                 {pct}%
               </span>
             </div>
-            <div className="relative h-2 overflow-hidden rounded-full bg-void-700">
+            <div
+              className="relative h-2 overflow-hidden rounded-full"
+              style={{ backgroundColor: isLight ? "#e2e8f0" : "#1f2533" }}
+            >
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${cls.probability * 100}%` }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
-                className={`h-full bg-gradient-to-r ${tone}`}
+                className="h-full"
+                style={{ backgroundImage: barGrad }}
               />
             </div>
           </li>

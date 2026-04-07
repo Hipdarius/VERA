@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTheme } from "./ThemeProvider";
 
 export function MissionPanel({
   title,
@@ -11,6 +12,9 @@ export function MissionPanel({
   children: React.ReactNode;
   delay?: number;
 }) {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 12 }}
@@ -19,7 +23,13 @@ export function MissionPanel({
       className="panel"
     >
       <div className="panel-header">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-glow shadow-glow-cyan" />
+        <span
+          className="inline-block h-1.5 w-1.5 rounded-full"
+          style={{
+            backgroundColor: isLight ? "#0284c7" : "#22d3ee",
+            boxShadow: isLight ? "none" : "0 0 24px rgba(34, 211, 238, 0.35)",
+          }}
+        />
         {title}
       </div>
       <div className="panel-body">{children}</div>

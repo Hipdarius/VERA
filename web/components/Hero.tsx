@@ -1,37 +1,90 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTheme } from "./ThemeProvider";
 
 export function Hero({
   schemaVersion,
   modelLoaded,
+  metaLoading = false,
 }: {
   schemaVersion: string | null;
   modelLoaded: boolean;
+  metaLoading?: boolean;
 }) {
+  const { theme, toggle } = useTheme();
+
   return (
-    <header className="relative overflow-hidden border-b border-cyan-glow/15 bg-gradient-to-b from-void-900 via-void-800 to-void-900 px-6 py-12 sm:py-16">
+    <header className="relative overflow-hidden border-b border-cyan-glow/15 dark:border-cyan-glow/15 light:border-slate-200 bg-gradient-to-b from-void-900 via-void-800 to-void-900 dark:from-void-900 dark:via-void-800 dark:to-void-900 px-6 py-12 sm:py-16"
+      style={{
+        background: theme === "light"
+          ? "linear-gradient(to bottom, #f8fafc, #f1f5f9, #f8fafc)"
+          : undefined,
+        borderColor: theme === "light" ? "#e2e8f0" : undefined,
+      }}
+    >
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center gap-3 text-xs font-mono uppercase tracking-[0.3em] text-cyan-glow/80"
-        >
-          <span className="inline-block h-2 w-2 animate-pulse-soft rounded-full bg-cyan-glow shadow-glow-cyan" />
-          Mission Control · Lunar Surface Operations
-        </motion.div>
+        <div className="flex items-center justify-between">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center gap-3 text-xs font-mono uppercase tracking-[0.3em]"
+            style={{ color: theme === "light" ? "#0369a1" : "rgba(34, 211, 238, 0.8)" }}
+          >
+            <span
+              className="inline-block h-2 w-2 animate-pulse-soft rounded-full"
+              style={{
+                backgroundColor: theme === "light" ? "#0284c7" : "#22d3ee",
+                boxShadow: theme === "light" ? "0 0 12px rgba(2, 132, 199, 0.4)" : "0 0 24px rgba(34, 211, 238, 0.35)",
+              }}
+            />
+            Mission Control · Lunar Surface Operations
+          </motion.div>
+
+          <button
+            onClick={toggle}
+            className="flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-all"
+            style={{
+              borderColor: theme === "light" ? "#cbd5e1" : "rgba(34, 211, 238, 0.3)",
+              background: theme === "light" ? "rgba(255,255,255,0.8)" : "rgba(10, 13, 20, 0.6)",
+              color: theme === "light" ? "#475569" : "#94a3b8",
+            }}
+          >
+            {theme === "dark" ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                Light
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                Dark
+              </>
+            )}
+          </button>
+        </div>
 
         <motion.h1
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05 }}
-          className="font-mono text-4xl font-semibold leading-tight text-slate-100 sm:text-6xl"
+          className="font-mono text-4xl font-semibold leading-tight sm:text-6xl"
         >
-          <span className="bg-gradient-to-r from-cyan-glow via-slate-100 to-amber-glow bg-clip-text text-transparent">
+          <span
+            className="bg-clip-text text-transparent"
+            style={{
+              backgroundImage: theme === "light"
+                ? "linear-gradient(to right, #0284c7, #0f172a, #d97706)"
+                : "linear-gradient(to right, #22d3ee, #f1f5f9, #fbbf24)",
+            }}
+          >
             REGOSCAN
           </span>
-          <span className="block text-base font-normal tracking-wider text-slate-400 sm:text-lg">
+          <span
+            className="block text-base font-normal tracking-wider sm:text-lg"
+            style={{ color: theme === "light" ? "#64748b" : "#94a3b8" }}
+          >
             VIS/NIR + 405 nm LIF mineral classification probe
           </span>
         </motion.h1>
@@ -40,37 +93,53 @@ export function Hero({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.7, delay: 0.15 }}
-          className="max-w-2xl text-sm leading-relaxed text-slate-400 sm:text-base"
+          className="max-w-2xl text-sm leading-relaxed sm:text-base"
+          style={{ color: theme === "light" ? "#64748b" : "#94a3b8" }}
         >
           A compact spectrometer that fingerprints lunar regolith in real time.
-          Click <span className="text-cyan-glow">Initiate Scan</span> to fire a
-          synthetic acquisition through the trained 1D&nbsp;ResNet and read out
-          a mineral class plus ilmenite mass fraction in milliseconds.
+          Click{" "}
+          <span style={{ color: theme === "light" ? "#0284c7" : "#22d3ee" }}>
+            Initiate Scan
+          </span>{" "}
+          to fire a synthetic acquisition through the trained 1D&nbsp;ResNet and
+          read out a mineral class plus ilmenite mass fraction in milliseconds.
         </motion.p>
 
         <div className="flex flex-wrap gap-3 font-mono text-[10px] uppercase tracking-wider">
-          <Pill label="schema" value={schemaVersion ?? "?"} ok={!!schemaVersion} />
-          <Pill
-            label="model"
-            value={modelLoaded ? "ONNX online" : "offline"}
-            ok={modelLoaded}
-          />
-          <Pill label="runtime" value="onnxruntime" ok />
+          {metaLoading ? (
+            <Pill label="status" value="connecting..." ok={false} theme={theme} />
+          ) : (
+            <>
+              <Pill label="schema" value={schemaVersion ?? "?"} ok={!!schemaVersion} theme={theme} />
+              <Pill label="model" value={modelLoaded ? "ONNX online" : "offline"} ok={modelLoaded} theme={theme} />
+              <Pill label="runtime" value="onnxruntime" ok theme={theme} />
+            </>
+          )}
         </div>
       </div>
     </header>
   );
 }
 
-function Pill({ label, value, ok }: { label: string; value: string; ok: boolean }) {
-  const tone = ok
-    ? "border-cyan-glow/30 text-cyan-glow shadow-glow-cyan"
-    : "border-amber-glow/30 text-amber-glow shadow-glow-amber";
+function Pill({ label, value, ok, theme }: { label: string; value: string; ok: boolean; theme: string }) {
+  const isLight = theme === "light";
+  const okColor = isLight ? "#0284c7" : "#22d3ee";
+  const warnColor = isLight ? "#d97706" : "#fbbf24";
+  const color = ok ? okColor : warnColor;
+
   return (
     <div
-      className={`flex items-center gap-2 rounded-full border bg-void-800/60 px-3 py-1 ${tone}`}
+      className="flex items-center gap-2 rounded-full border px-3 py-1"
+      style={{
+        borderColor: ok
+          ? (isLight ? "rgba(2, 132, 199, 0.3)" : "rgba(34, 211, 238, 0.3)")
+          : (isLight ? "rgba(217, 119, 6, 0.3)" : "rgba(251, 191, 36, 0.3)"),
+        background: isLight ? "rgba(255,255,255,0.6)" : "rgba(10, 13, 20, 0.6)",
+        color,
+        boxShadow: isLight ? "none" : (ok ? "0 0 24px rgba(34, 211, 238, 0.35)" : "0 0 24px rgba(251, 191, 36, 0.35)"),
+      }}
     >
-      <span className="text-slate-500">{label}</span>
+      <span style={{ color: isLight ? "#94a3b8" : "#64748b" }}>{label}</span>
       <span>{value}</span>
     </div>
   );

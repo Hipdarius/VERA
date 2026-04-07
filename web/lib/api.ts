@@ -1,4 +1,4 @@
-import type { DemoResponse, MetaResponse, PredictionResponse } from "./types";
+import type { DemoResponse, EndmembersResponse, MetaResponse, PredictionResponse } from "./types";
 
 // In production (Vercel), the Python serverless function lives at /api/*
 // on the same origin as the Next.js app — leave NEXT_PUBLIC_API_BASE unset.
@@ -30,6 +30,10 @@ export function fetchMeta(): Promise<MetaResponse> {
 export function fetchDemoPrediction(seed?: number): Promise<DemoResponse> {
   const qs = seed !== undefined ? `?seed=${seed}` : "";
   return jsonFetch<DemoResponse>(`/api/predict/demo${qs}`, { method: "POST" });
+}
+
+export function fetchEndmembers(): Promise<EndmembersResponse> {
+  return jsonFetch<EndmembersResponse>("/api/endmembers");
 }
 
 export function postPrediction(payload: {

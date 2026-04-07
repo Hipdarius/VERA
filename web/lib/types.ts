@@ -35,6 +35,12 @@ export interface MetaResponse {
   model_run_dir: string | null;
 }
 
+export interface EndmembersResponse {
+  wavelengths_nm: number[];
+  endmembers: Record<string, number[]>;
+  source?: string;
+}
+
 export const CLASS_LABELS: Record<string, string> = {
   ilmenite_rich: "Ilmenite-Rich",
   olivine_rich: "Olivine-Rich",

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTheme } from "./ThemeProvider";
 
 export function ScanButton({
   onClick,
@@ -11,29 +12,41 @@ export function ScanButton({
   isScanning: boolean;
   disabled?: boolean;
 }) {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
+
   return (
     <motion.button
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       onClick={onClick}
       disabled={disabled || isScanning}
-      className={`group relative overflow-hidden rounded-lg border border-cyan-glow/40 bg-cyan-glow/10 px-6 py-3 font-mono text-sm uppercase tracking-[0.25em] text-cyan-glow shadow-glow-cyan transition-all
-        disabled:cursor-not-allowed disabled:opacity-40
-        hover:bg-cyan-glow/20 hover:shadow-glow-cyan`}
+      className="group relative overflow-hidden rounded-lg border px-6 py-3 font-mono text-sm uppercase tracking-[0.25em] transition-all disabled:cursor-not-allowed disabled:opacity-40"
+      style={{
+        borderColor: isLight ? "rgba(2, 132, 199, 0.4)" : "rgba(34, 211, 238, 0.4)",
+        background: isLight ? "rgba(2, 132, 199, 0.08)" : "rgba(34, 211, 238, 0.1)",
+        color: isLight ? "#0284c7" : "#22d3ee",
+        boxShadow: isLight ? "0 1px 3px rgba(2, 132, 199, 0.15)" : "0 0 24px rgba(34, 211, 238, 0.35)",
+      }}
     >
       <span className="relative z-10 flex items-center gap-3">
         <span
-          className={`inline-block h-2 w-2 rounded-full bg-cyan-glow ${
-            isScanning ? "animate-pulse" : ""
-          }`}
+          className={`inline-block h-2 w-2 rounded-full ${isScanning ? "animate-pulse" : ""}`}
+          style={{ backgroundColor: isLight ? "#0284c7" : "#22d3ee" }}
         />
-        {isScanning ? "Scanning…" : "Initiate Scan"}
+        {isScanning ? "Scanning\u2026" : "Initiate Scan"}
       </span>
 
-      {/* The scanline overlay only appears while a scan is running. */}
       {isScanning && (
         <span className="pointer-events-none absolute inset-x-0 top-0 h-full">
-          <span className="absolute inset-x-0 h-[2px] animate-scan-line bg-gradient-to-r from-transparent via-cyan-glow to-transparent" />
+          <span
+            className="absolute inset-x-0 h-[2px] animate-scan-line"
+            style={{
+              backgroundImage: isLight
+                ? "linear-gradient(to right, transparent, #0284c7, transparent)"
+                : "linear-gradient(to right, transparent, #22d3ee, transparent)",
+            }}
+          />
         </span>
       )}
     </motion.button>
