@@ -53,3 +53,17 @@ dist/
 *.so
 *.pyd
 *.dll
+
+# PlatformIO
+.pio/
+firmware/.pio/
+
+# Environment files
+.env
+.env.local
+web/.env.local
+
+# Linting caches
+.ruff_cache/
+.mypy_cache/
+
