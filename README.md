@@ -220,8 +220,6 @@ make clean            # Remove caches
 
 <div align="center">
 
-*Developed for the [Jonk Fuerscher](https://www.fjsl.lu) 2027 competition.*
-
-*Luxembourg Space Agency AFAD Ambassador Project*
+*Developed by Darius Ferent for the [Jonk Fuerscher](https://www.fjsl.lu) 2027 competition.*
 
 </div>
