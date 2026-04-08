@@ -9,7 +9,7 @@
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776ab.svg)](https://python.org)
 [![Tests: 136 passed](https://img.shields.io/badge/Tests-136%20passed-brightgreen.svg)](#testing)
 
-A low-power optical probe that identifies lunar minerals and estimates ilmenite mass fraction in real time — designed for the next generation of ISRU rovers.
+A low-power optical probe for identifying lunar minerals and estimating ilmenite mass fraction in real time, designed for ISRU rovers.
 
 [Quick Start](#quick-start) &middot; [Architecture](#architecture) &middot; [API Reference](#api-reference) &middot; [Contributing](CONTRIBUTING.md)
 
@@ -19,13 +19,13 @@ A low-power optical probe that identifies lunar minerals and estimates ilmenite 
 
 ## Why REGOSCAN
 
-Lunar oxygen extraction depends on finding ilmenite (FeTiO3) — the best feedstock for hydrogen reduction. Current prospecting instruments weigh kilograms and cost six figures. REGOSCAN targets **< 300 g**, **< 2 W**, and **< 1,500 EUR** in parts, classifying regolith composition in milliseconds on an ESP32.
+Lunar oxygen extraction depends on finding ilmenite (FeTiO3), a primary feedstock for hydrogen reduction. Current prospecting instruments weigh kilograms and cost six figures. REGOSCAN targets **< 300 g**, **< 2 W**, and **< 500 EUR** in parts, with millisecond-latency classification on an ESP32.
 
 The probe combines three sensing modalities into a single 301-feature measurement:
 
 | Modality | Sensor | Channels | What it measures |
 |----------|--------|----------|-----------------|
-| VIS/NIR reflectance | Hamamatsu C12880MA | 288 (340--850 nm) | Mineral absorption fingerprints |
+| VIS/NIR reflectance | Hamamatsu C12880MA | 288 (340--850 nm) | Spectral absorption features |
 | Narrowband LED | 12 discrete LEDs | 12 (385--940 nm) | Targeted spectral features |
 | Laser-induced fluorescence | 405 nm diode + 450 nm LP filter | 1 | Ilmenite suppresses fluorescence |
 
@@ -75,7 +75,7 @@ make serve-api                   # Terminal 1: FastAPI on :8000
 make serve-web                   # Terminal 2: Next.js on :3000
 ```
 
-Open **http://localhost:3000** and click **Initiate Scan**.
+Open **http://localhost:3000** and click **Start Scan**.
 
 ---
 
@@ -105,7 +105,7 @@ Open **http://localhost:3000** and click **Initiate Scan**.
                     └──────────────────┬────────────────────────────────┘
                                        │
                     ┌──────────────────▼────────────────────────────────┐
-                    │        Next.js Mission Console (port 3000)        │
+                    │           Next.js Dashboard (port 3000)           │
                     │  Spectrum chart ─ Endmember overlays ─ Ilmenite   │
                     │  gauge ─ Probability bars ─ Scan history ─ CSV    │
                     │  upload ─ Dark/light theme                        │
@@ -143,7 +143,7 @@ firmware/src/               ESP32-S3 C++ (PlatformIO)
   AS7265x.h                 Secondary 18-band sensor (interface)
   main.cpp                  Non-blocking state machine, 5x averaging
 
-web/                        Next.js 14 mission console
+web/                        Next.js 14 web interface
   components/               10 React components (spectrum, gauges, history, upload)
   lib/                      API client + TypeScript types
   api/predict.py            Vercel serverless handler
@@ -160,7 +160,7 @@ tests/                      136 tests across 8 files
 | **Schema contract** | `schema.py` defines the exact 309-column format. Locked at v1.0.0. Every module reads/writes through this contract. |
 | **Sample-level integrity** | Train/val/test splits partition by `sample_id`, never by measurement. A canary test enforces no leakage. |
 | **Physical fidelity** | Synthetic spectra use linear mixing, shot noise, baseline drift, gain variation, packing density, and LIF quenching. |
-| **Software-first** | The pipeline works on synthetic data today. When hardware arrives, swap the data source — nothing else changes. |
+| **Software-first** | The pipeline works on synthetic data. To integrate hardware, swap the data source: no other changes are required. |
 | **No heap on embedded** | All firmware buffers are `constexpr` sized. Zero `new`, zero `std::vector`, zero `String` concatenation. |
 
 ---
