@@ -1,108 +1,273 @@
+<div align="center">
+
 # VERA
+
+### Visible & Emission Regolith Assessment
 
 **Compact VIS/NIR + 405 nm LIF Probe for Real-Time Lunar Regolith Mineralogy**
 
-VERA (Visible & Emission Regolith Assessment) is a lightweight, low-power optical probe designed for lunar In-Situ Resource Utilization (ISRU) prospecting. By combining 288-channel visible/NIR diffuse reflectance spectroscopy with 405 nm Laser-Induced Fluorescence (LIF), it identifies key mineral phases and estimates ilmenite (FeTiO₃) mass fraction in real-time.
+[![CI](https://github.com/Hipdarius/RegoScan/actions/workflows/ci.yml/badge.svg)](https://github.com/Hipdarius/RegoScan/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776ab?logo=python&logoColor=white)](https://python.org)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22d3ee)](LICENSE)
+[![Tests: 72](https://img.shields.io/badge/tests-72_passing-34d399)]()
+[![ONNX Runtime](https://img.shields.io/badge/inference-ONNX_Runtime-8b5cf6)]()
 
 ---
 
-## 🚀 Overview
+*A full-stack lunar prospecting instrument — from embedded firmware through*
+*machine learning to real-time web telemetry — designed and built by*
+**Darius Ferent** *for the Jonk Fuerscher 2027 competition.*
 
-The project provides a complete software-hardware co-design stack, validated on high-fidelity synthetic spectra derived from USGS and RELAB endmembers. It targets the next generation of lunar rovers and ISRU pilot plants, where identifying oxygen-rich minerals (like ilmenite) is a mission-critical bottleneck.
-
-### Key Capabilities:
-- **5-Way Mineral Classification**: Identifies `ilmenite_rich`, `olivine_rich`, `pyroxene_rich`, `anorthositic`, and `mixed` regolith.
-- **Continuous Regression**: Estimates `ilmenite_fraction` (0–100%) with high precision.
-- **Multi-Modal Input**: Integrates 288 reflectance channels (340–850 nm), 12 narrowband LED reflectances, and 1 LIF photodiode channel.
-- **Embedded-Ready ML**: Includes a lightweight 1D ResNet (PyTorch/ONNX) and a statistical PLSR baseline.
+</div>
 
 ---
 
-## 📊 Performance (v2 Dataset)
+## Why VERA?
 
-Current benchmarks on a held-out test set of 3,000 synthetic lunar samples:
+Lunar In-Situ Resource Utilization (ISRU) depends on knowing **what minerals are beneath the regolith**. Oxygen extraction from ilmenite (FeTiO3) is the most promising near-term ISRU pathway, but current prospecting tools are either too heavy, too slow, or require sample return.
 
-| Model | Task | Metric | Performance |
-|-------|------|--------|-------------|
-| **1D ResNet** | Classification | Top-1 Accuracy | **93.2%** |
-| **PLSR** | Regression | Ilmenite R² | **0.967** |
-| **PLSR** | Regression | Ilmenite RMSE | **0.037** |
-
-The hybrid approach uses the CNN for robust class identification and the PLSR baseline for precise mass-fraction estimation, offering a "best-of-both-worlds" analytical tool.
+VERA solves this with a **handheld-class optical probe** that combines three sensing modalities into a single 301-feature measurement, classifies the mineral phase in <5 ms on CPU, and estimates ilmenite mass fraction continuously.
 
 ---
 
-## 🛠️ Installation
+## Sensor Architecture
 
-This project uses `uv` for lightning-fast dependency management.
+| Modality | Hardware | Channels | Range |
+|:---------|:---------|:--------:|:------|
+| **VIS/NIR Reflectance** | Hamamatsu C12880MA | 288 | 340 -- 850 nm |
+| **Narrowband LED** | 12x discrete LEDs | 12 | 385 -- 940 nm |
+| **405 nm LIF** | Laser diode + 450 LP filter | 1 | Fluorescence intensity |
 
-```bash
-# Clone the repository
-git clone https://github.com/Hipdarius/VERA.git
-cd VERA
+> **Total input vector: 301 features** (288 spectral + 12 LED + 1 LIF)
 
-# Install dependencies and sync environment
-uv sync
+---
+
+## System Architecture
+
+```
++---------------------------------------------------------------------+
+|                        VERA SYSTEM ARCHITECTURE                     |
++---------------------------------------------------------------------+
+|                                                                     |
+|  HARDWARE LAYER              INFERENCE LAYER        INTERFACE LAYER |
+|  +-----------------+    +--------------------+    +---------------+ |
+|  | ESP32-S3 MCU    |    | ONNX Runtime       |    | Next.js 14    | |
+|  | C12880MA driver  |--->| 1D ResNet (~670k)  |--->| Recharts      | |
+|  | 12x LED array   |    | Softmax + Regress  |    | Framer Motion | |
+|  | 405 nm LIF laser|    | <5 ms / inference  |    | Tailwind CSS  | |
+|  | AS7265x (18-ch) |    +--------------------+    +---------------+ |
+|  +-----------------+             |                        |         |
+|          |                       v                        v         |
+|          |               +--------------------+    +---------------+|
+|          +-------------->| FastAPI REST API    |--->| Theme system  ||
+|           JSON/Serial    | 5 endpoints         |    | Scan history  ||
+|                          | ONNX session pool   |    | CSV upload    ||
+|                          +--------------------+    +---------------+|
+|                                                                     |
+|  ML TRAINING PIPELINE                                               |
+|  +---------------------------------------------------------------+  |
+|  | Synthetic spectra (USGS/RELAB endmembers)                     |  |
+|  | StratifiedGroupKFold CV | Spectral mixing augmentation        |  |
+|  | 1D ResNet (classification) + PLSR (regression) dual heads     |  |
+|  | Bootstrap CI | Permutation feature importance | ONNX export   |  |
+|  +---------------------------------------------------------------+  |
++---------------------------------------------------------------------+
 ```
 
 ---
 
-## 🏃 Quick Start (The "Acceptance Test")
+## Performance
 
-To verify the entire pipeline from data generation to quantized inference:
+Benchmarked on a held-out test set of 3,000 synthetic lunar regolith samples:
 
-```bash
-# 1. Download spectral endmembers (USGS)
-python scripts/download_usgs.py
+| Model | Task | Metric | Score |
+|:------|:-----|:-------|------:|
+| **1D ResNet** | 5-class mineral ID | Top-1 Accuracy | **93.2 %** |
+| **1D ResNet** | 5-class mineral ID | Macro F1 | **0.91** |
+| **PLSR** | Ilmenite regression | R2 | **0.967** |
+| **PLSR** | Ilmenite regression | RMSE | **0.037** |
 
-# 2. Generate a synthetic dataset (v2)
-python scripts/generate_synth_dataset.py --n-samples 50 --measurements-per-sample 8 --out data/synth_v1.csv
-
-# 3. Train models
-python -m vera.train --model plsr --data data/synth_v1.csv --out runs/plsr/
-python -m vera.train --model cnn  --data data/synth_v1.csv --epochs 20 --out runs/cnn/
-
-# 4. Evaluate and Quantize
-python -m vera.evaluate --run runs/cnn/ --data data/synth_v1.csv
-python -m vera.quantize --run runs/cnn/ --out runs/cnn/model_int8.tflite
-
-# 5. Launch the Dashboard
-streamlit run apps/dashboard.py
-```
+The hybrid approach uses the CNN for robust classification and PLSR for precise mass-fraction estimation.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
-```text
+```
 vera/
-├── apps/               # Interactive UIs (Streamlit, FastAPI)
-├── data/               # Local cache for USGS/RELAB and generated datasets
-├── runs/               # Trained models, metrics, and evaluation plots
-├── scripts/            # CLI utilities for data ingestion and generation
-├── src/vera/       # Core library:
-│   ├── models/         # CNN (PyTorch) and PLSR architectures
-│   ├── schema.py       # The hardware-software data contract (Locked)
-│   ├── synth.py        # Physically-motivated spectral mixing engine
-│   └── ...
-└── tests/              # Unit tests (PyTest)
+├── src/vera/               Core Python library
+│   ├── schema.py               Hardware-software data contract (locked)
+│   ├── synth.py                Physically-motivated spectral mixing engine
+│   ├── datasets.py             PyTorch dataset + StratifiedGroupKFold splits
+│   ├── augment.py              Spectral mixing, noise injection, baseline drift
+│   ├── train.py                CNN + PLSR training with k-fold cross-validation
+│   ├── evaluate.py             Confusion matrices, ROC/PR curves, CI intervals
+│   ├── inference.py            ONNX Runtime engine (torch-free, <5 ms)
+│   ├── quantize.py             ONNX export + INT8 quantization
+│   ├── features.py             Feature extraction and preprocessing pipeline
+│   ├── io_csv.py               Schema-validated CSV I/O
+│   ├── preprocess.py           SNV normalization, Savitzky-Golay smoothing
+│   └── models/
+│       ├── cnn.py                  1D ResNet (~670k params, dual head)
+│       └── plsr.py                 PLS Regression + Random Forest baseline
+│
+├── apps/
+│   ├── api.py                  FastAPI REST backend (5 endpoints)
+│   └── dashboard.py            Streamlit exploration dashboard
+│
+├── web/                    Next.js 14 mission console
+│   ├── app/                    App router, layout, global styles
+│   ├── components/             14 React components (charts, gauges, panels)
+│   └── lib/                    API client, TypeScript types
+│
+├── firmware/               ESP32-S3 embedded firmware
+│   └── src/
+│       ├── main.cpp                Non-blocking state machine
+│       ├── C12880MA.cpp/h          Bit-banged spectrometer driver
+│       ├── AS7265x.h               Secondary 18-band sensor interface
+│       ├── Illumination.cpp/h      LED array + laser GPIO control
+│       ├── Protocol.cpp/h          ArduinoJson serialization + thermistor
+│       └── Config.h                Pin assignments, calibration constants
+│
+├── tests/                  72 tests across 6 test modules
+│   ├── test_schema.py          22 tests — data contract validation
+│   ├── test_preprocess.py      14 tests — SNV, Savitzky-Golay, edge cases
+│   ├── test_synth.py           12 tests — spectral synthesis fidelity
+│   ├── test_augment.py         10 tests — augmentation pipeline
+│   ├── test_datasets.py        10 tests — split integrity, no sample leakage
+│   └── test_train_smoke.py      4 tests — CNN forward pass, PLSR fit
+│
+├── scripts/                CLI utilities
+│   ├── generate_synth_dataset.py   Synthetic data generation
+│   ├── download_usgs.py            USGS Spectral Library downloader
+│   ├── download_relab.py           RELAB lunar sample downloader
+│   ├── bridge.py                   ESP32 serial -> inference -> CSV logger
+│   └── mock_esp32.py              Synthetic JSON frame emitter for testing
+│
+├── .github/workflows/ci.yml   CI: pytest + TypeScript typecheck + PlatformIO
+├── pyproject.toml              Project config (uv / hatch)
+├── Makefile                    8 automation targets
+└── CONTRIBUTING.md             Developer guide and conventions
 ```
 
 ---
 
-## 🧠 Design Principles
+## Design Principles
 
-1. **Hardware-Software Contract**: All communication is enforced by the canonical schema in `schema.py`, ensuring seamless transition from synthetic data to real hardware.
-2. **Sample-Level Integrity**: Train/Val/Test splits are strictly partitioned by `sample_id` (not individual measurements) to ensure the model generalizes to new mineral compositions.
-3. **Physical Fidelity**: Synthetic spectra aren't random noise; they are built using linear-mixing models, shot noise, gain variation, and baseline drift.
-4. **Transparency**: Every model run produces a full evaluation report with confusion matrices and 95% confidence intervals.
+| Principle | Implementation |
+|:----------|:---------------|
+| **Hardware-Software Contract** | `schema.py` defines every column name, dtype, and valid range. All layers read/write through this single source of truth. |
+| **No Sample Leakage** | Train/val/test splits use `StratifiedGroupKFold` on `sample_id`, never on individual measurements. |
+| **Physical Fidelity** | Synthetic spectra use linear mixing of real USGS/RELAB endmembers with shot noise, gain drift, and baseline variation. |
+| **Deterministic Training** | Same CLI invocation produces bit-identical model weights (seeded RNG, deterministic cuDNN). |
+| **Torch-Free Inference** | Production path uses ONNX Runtime only — no PyTorch dependency at serve time. |
+| **Transparency** | Every training run logs confusion matrices, ROC/PR curves, bootstrap 95% CI, and feature importance. |
+
+---
+
+## API Reference
+
+The FastAPI backend exposes 5 endpoints:
+
+| Method | Endpoint | Description |
+|:-------|:---------|:------------|
+| `GET` | `/healthz` | Liveness check |
+| `GET` | `/api/meta` | Model version, schema, feature count, ONNX hash |
+| `POST` | `/api/predict` | Classify a 301-feature input vector |
+| `POST` | `/api/predict/demo` | Fire a synthetic acquisition for demo |
+| `GET` | `/api/endmembers` | Return reference mineral spectra for overlay |
+
+```bash
+# Start the API server
+make serve-api
+
+# Start the web dashboard
+make serve-web
+```
 
 ---
 
-## 🔗 Related Resources
-- **USGS Spectral Library**: Base endmembers for terrestrial minerals.
-- **RELAB (Brown University)**: Actual lunar sample spectra for future validation.
-- **ESRIC (Luxembourg)**: Contextual framework for lunar ISRU prospecting.
+## Quick Start
+
+```bash
+# Clone and install
+git clone https://github.com/Hipdarius/RegoScan.git
+cd RegoScan
+uv sync
+
+# Generate synthetic training data
+make data-gen
+
+# Train the CNN with 5-fold cross-validation
+make train
+
+# Run the full test suite
+make test
+
+# Launch API + web dashboard
+make serve-api   # terminal 1 — port 8000
+make serve-web   # terminal 2 — port 3000
+```
 
 ---
-*Developed for the Jonk Fuerscher competition 2027.*
+
+## Makefile Targets
+
+| Target | Description |
+|:-------|:------------|
+| `make test` | Run 72 pytest tests with verbose output |
+| `make lint` | Ruff check + format verification |
+| `make train` | Train CNN with 5-fold CV (50 epochs) |
+| `make data-gen` | Generate 4,000 synthetic spectral samples |
+| `make serve-api` | FastAPI on port 8000 with hot reload |
+| `make serve-web` | Next.js dev server on port 3000 |
+| `make firmware-build` | Compile ESP32-S3 firmware via PlatformIO |
+| `make clean` | Remove caches and build artifacts |
+
+---
+
+## CI / CD
+
+GitHub Actions runs three jobs on every push to `main`:
+
+| Job | What it does |
+|:----|:-------------|
+| **test** | `uv sync` + `pytest tests/ -v` across all 72 tests |
+| **typecheck** | `npm ci` + `tsc --noEmit` on the Next.js frontend |
+| **firmware-build** | PlatformIO compilation of the ESP32-S3 firmware |
+
+---
+
+## Test Breakdown
+
+| Module | Tests | Coverage |
+|:-------|------:|:---------|
+| `test_schema.py` | 22 | Data contract, column names, dtypes, ranges |
+| `test_preprocess.py` | 14 | SNV normalization, SG smoothing, edge cases |
+| `test_synth.py` | 12 | Endmember mixing, noise models, output shapes |
+| `test_augment.py` | 10 | Spectral mix augmentation, seed determinism |
+| `test_datasets.py` | 10 | Split integrity, group isolation, augmentation |
+| `test_train_smoke.py` | 4 | CNN forward pass, parameter count, PLSR fit |
+| **Total** | **72** | |
+
+---
+
+## Tech Stack
+
+| Layer | Technologies |
+|:------|:-------------|
+| **ML / Training** | PyTorch, scikit-learn, NumPy, pandas, SciPy |
+| **Inference** | ONNX Runtime (CPU, <5 ms per prediction) |
+| **Backend** | FastAPI, Uvicorn, Pydantic |
+| **Frontend** | Next.js 14, React 18, Recharts, Framer Motion, Tailwind CSS |
+| **Firmware** | C++ (ESP32-S3), PlatformIO, ArduinoJson |
+| **CI / CD** | GitHub Actions (pytest + tsc + PlatformIO) |
+| **Package Mgmt** | uv (Python), npm (Node.js) |
+
+---
+
+<div align="center">
+
+**Developed by Darius Ferent for the Jonk Fuerscher 2027 competition.**
+
+</div>
