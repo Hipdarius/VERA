@@ -1,10 +1,10 @@
 [project]
-name = "regoscan"
+name = "vera"
 version = "0.1.0"
-description = "VIS/NIR + 405 nm LIF probe for lunar regolith mineral classification"
+description = "VERA — Visible & Emission Regolith Assessment probe for lunar mineral classification"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
-authors = [{ name = "Regoscan team" }]
+authors = [{ name = "Darius Ferent" }]
 license = { text = "MIT" }
 
 dependencies = [
@@ -25,6 +25,7 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "pytest-cov>=4.1",
+    "ruff>=0.4",
     "httpx>=0.27",
 ]
 serve = [
@@ -35,16 +36,16 @@ serve = [
 ]
 
 [project.scripts]
-regoscan-train = "regoscan.train:main"
-regoscan-evaluate = "regoscan.evaluate:main"
-regoscan-quantize = "regoscan.quantize:main"
+vera-train = "vera.train:main"
+vera-evaluate = "vera.evaluate:main"
+vera-quantize = "vera.quantize:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/regoscan"]
+packages = ["src/vera"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -58,4 +59,6 @@ filterwarnings = [
 dev = [
     "pytest>=8.0",
     "pytest-cov>=4.1",
+    "ruff>=0.4",
+    "httpx>=0.27",
 ]

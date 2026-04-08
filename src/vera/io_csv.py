@@ -1,4 +1,4 @@
-"""Read/write the canonical Regoscan measurement CSV.
+"""Read/write the canonical VERA measurement CSV.
 
 Everything that touches a CSV must go through this module so the schema
 contract is enforced in exactly one place.
@@ -12,7 +12,7 @@ from typing import Iterable
 import numpy as np
 import pandas as pd
 
-from regoscan.schema import (
+from vera.schema import (
     ALL_COLUMNS,
     LED_COLS,
     LIF_COL,
@@ -26,7 +26,7 @@ from regoscan.schema import (
 
 
 class SchemaError(ValueError):
-    """Raised when a CSV does not match the canonical Regoscan schema."""
+    """Raised when a CSV does not match the canonical VERA schema."""
 
 
 # ---------------------------------------------------------------------------
@@ -38,7 +38,7 @@ def validate_dataframe(df: pd.DataFrame) -> None:
     """Validate a DataFrame against the canonical schema.
 
     Cheap structural checks (column names, dtypes, value ranges). Does NOT
-    instantiate :class:`~regoscan.schema.Measurement` for every row — that
+    instantiate :class:`~vera.schema.Measurement` for every row — that
     would be slow on large datasets.
     """
     missing = [c for c in ALL_COLUMNS if c not in df.columns]
@@ -85,7 +85,7 @@ def validate_dataframe(df: pd.DataFrame) -> None:
 
 
 def read_measurements_csv(path: str | Path) -> pd.DataFrame:
-    """Read a Regoscan CSV from disk and validate it.
+    """Read a VERA CSV from disk and validate it.
 
     Returns a DataFrame whose columns are exactly :data:`ALL_COLUMNS`, in
     canonical order, with numeric blocks dtyped as ``float64``/``int64``.
@@ -177,7 +177,7 @@ def extract_feature_matrix(df: pd.DataFrame) -> np.ndarray:
 
 def extract_labels(df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
     """Return ``(class_indices, ilmenite_fraction)`` arrays."""
-    from regoscan.schema import CLASS_TO_INDEX
+    from vera.schema import CLASS_TO_INDEX
 
     class_idx = df["mineral_class"].map(CLASS_TO_INDEX).to_numpy(dtype=np.int64)
     ilm = df["ilmenite_fraction"].to_numpy(dtype=np.float64)

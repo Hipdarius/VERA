@@ -16,12 +16,12 @@ import pandas as pd
 import pytest
 import torch
 
-from regoscan.io_csv import write_measurements_csv
-from regoscan.models.cnn import RegoscanCNN, count_params
-from regoscan.models.plsr import build_baseline_features, load_baseline
-from regoscan.schema import N_FEATURES_TOTAL, WAVELENGTHS
-from regoscan.synth import Endmembers, synth_dataset
-from regoscan.train import main as train_main
+from vera.io_csv import write_measurements_csv
+from vera.models.cnn import RegoscanCNN, count_params
+from vera.models.plsr import build_baseline_features, load_baseline
+from vera.schema import N_FEATURES_TOTAL, WAVELENGTHS
+from vera.synth import Endmembers, synth_dataset
+from vera.train import main as train_main
 
 
 def _toy_endmembers() -> Endmembers:
@@ -93,8 +93,8 @@ def test_plsr_smoke_trains_and_persists(synth_csv: Path, tmp_path: Path):
 
     # The pickled bundle must be loadable and infer cleanly.
     bb = load_baseline(out / "model.pkl")
-    from regoscan.io_csv import read_measurements_csv
-    from regoscan.datasets import to_bundle
+    from vera.io_csv import read_measurements_csv
+    from vera.datasets import to_bundle
     df = read_measurements_csv(synth_csv)
     bundle = to_bundle(df.head(8))
     X = build_baseline_features(bundle)

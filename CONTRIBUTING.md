@@ -1,6 +1,6 @@
-# Contributing to Regoscan
+# Contributing to VERA
 
-Thank you for your interest in contributing to the Regoscan lunar mineral classification probe project.
+Thank you for your interest in contributing to the VERA lunar mineral classification probe project.
 
 ## Prerequisites
 
@@ -15,8 +15,8 @@ Thank you for your interest in contributing to the Regoscan lunar mineral classi
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-org/regoscan.git
-cd regoscan
+git clone https://github.com/your-org/vera.git
+cd vera
 
 # Install Python dependencies (includes dev extras)
 uv sync --all-extras
@@ -51,7 +51,7 @@ cd web && npx tsc --noEmit
 ### Firmware (C++)
 
 - Target: ESP32-S3 via PlatformIO.
-- All code lives in the `regoscan` namespace.
+- All code lives in the `vera` namespace.
 - No heap allocations in the main loop -- use stack or `constexpr` sizing.
 - Use `constexpr` for all compile-time constants (never `#define`).
 - Pin assignments and magic numbers belong in `Config.h`.
@@ -89,7 +89,7 @@ The type must be one of: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci
 
 ## Schema Contract
 
-The spectral schema (`src/regoscan/schema.py`) defines the canonical column layout used across the entire pipeline -- from firmware JSON frames through training to inference.
+The spectral schema (`src/vera/schema.py`) defines the canonical column layout used across the entire pipeline -- from firmware JSON frames through training to inference.
 
 - **Do not modify schema.py without bumping its version.**
 - Any column rename or reorder is a breaking change and requires a migration note in the PR description.

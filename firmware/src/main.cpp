@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────
-// REGOSCAN ESP32-S3 Firmware — Non-blocking Acquisition State Machine
+// VERA ESP32-S3 Firmware — Non-blocking Acquisition State Machine
 //
 // Scan sequence:
 //   IDLE → DARK_FRAME → BROADBAND → NARROWBAND (×12) → LIF → TRANSMIT → IDLE
@@ -17,7 +17,7 @@
 #include "Illumination.h"
 #include "Protocol.h"
 
-using namespace regoscan;
+using namespace vera;
 
 // ── State machine ───────────────────────────────────────────────
 enum class State : uint8_t {

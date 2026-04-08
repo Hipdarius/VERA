@@ -36,11 +36,11 @@ export function ProbabilityBars({
         const pct = (cls.probability * 100).toFixed(1);
 
         const topColor = isLight ? "#d97706" : "#fbbf24";
-        const normalColor = isLight ? "#0284c7" : "#22d3ee";
+        const normalColor = isLight ? "#0284c7" : "#38bdf8";
         const labelColor = isTop ? topColor : (isLight ? "#64748b" : "#94a3b8");
         const barGrad = isTop
           ? (isLight ? "linear-gradient(to right, rgba(217, 119, 6, 0.8), rgba(217, 119, 6, 0.3))" : "linear-gradient(to right, rgba(251, 191, 36, 0.8), rgba(251, 191, 36, 0.3))")
-          : (isLight ? "linear-gradient(to right, rgba(2, 132, 199, 0.7), rgba(2, 132, 199, 0.1))" : "linear-gradient(to right, rgba(34, 211, 238, 0.7), rgba(34, 211, 238, 0.1))");
+          : (isLight ? "linear-gradient(to right, rgba(2, 132, 199, 0.7), rgba(2, 132, 199, 0.1))" : "linear-gradient(to right, rgba(56, 189, 248, 0.7), rgba(56, 189, 248, 0.1))");
 
         return (
           <li key={cls.name}>
@@ -54,7 +54,7 @@ export function ProbabilityBars({
             </div>
             <div
               className="relative h-2 overflow-hidden rounded-full"
-              style={{ backgroundColor: isLight ? "#e2e8f0" : "#1f2533" }}
+              style={{ backgroundColor: isLight ? "#e2e8f0" : "#1e293b" }}
             >
               <motion.div
                 initial={{ width: 0 }}

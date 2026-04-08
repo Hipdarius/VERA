@@ -10,7 +10,7 @@ Goal
 Produce a **validation-only** bundle at
 ``data/cache/relab_lunar.npz`` with real lunar spectra resampled to the
 C12880MA grid (340–850 nm, 288 points). This bundle is NOT used for
-training — it exists so ``regoscan.evaluate`` can run an out-of-training
+training — it exists so ``vera.evaluate`` can run an out-of-training
 sanity check on data the model has never seen and that was NOT generated
 by our own synth pipeline.
 
@@ -44,7 +44,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from regoscan.schema import N_SPEC, WAVELENGTHS  # noqa: E402
+from vera.schema import N_SPEC, WAVELENGTHS  # noqa: E402
 
 DEFAULT_OUT = ROOT / "data" / "cache" / "relab_lunar.npz"
 DEFAULT_USGS = ROOT / "data" / "cache" / "usgs_endmembers.npz"

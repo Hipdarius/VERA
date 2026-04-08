@@ -1,4 +1,4 @@
-"""Vercel Python serverless function for Regoscan inference.
+"""Vercel Python serverless function for VERA inference.
 
 This file is the **production** entry point. Vercel mounts every .py file
 under ``web/api/`` as a serverless function and supports ASGI apps (like
@@ -14,7 +14,7 @@ The Next.js client uses a same-origin rewrite (see vercel.json), so the
 browser only ever talks to the same domain — no CORS dance.
 
 Keep this file self-contained: do not import from the in-repo
-``regoscan`` package, because Vercel only ships ``web/`` to the
+``vera`` package, because Vercel only ships ``web/`` to the
 serverless runtime. The trained model lives at ``web/api/model.onnx``
 and is committed alongside this file.
 """
@@ -31,7 +31,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------------------------
-# Schema constants — duplicated from regoscan.schema so this module is
+# Schema constants — duplicated from vera.schema so this module is
 # self-contained for the Vercel runtime.
 # ---------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ def _get_session() -> ort.InferenceSession:
                 status_code=503,
                 detail=(
                     f"model.onnx missing at {_MODEL_PATH}; export it with "
-                    "`uv run python -m regoscan.quantize --run runs/cnn_v2 "
+                    "`uv run python -m vera.quantize --run runs/cnn_v2 "
                     "--out web/api/model.onnx` and redeploy"
                 ),
             )
@@ -102,14 +102,14 @@ def _run_inference(features: np.ndarray) -> dict[str, Any]:
         ],
         "ilmenite_fraction": float(ilm[0]),
         "confidence": float(probs[cls_idx]),
-        "model_version": "regoscan-resnet-v2",
+        "model_version": "vera-resnet-v2",
     }
 
 
 # ---------------------------------------------------------------------------
 # Synthetic demo generator (so the UI can scan without a CSV upload)
 #
-# This is a simplified, self-contained version of regoscan.synth — just
+# This is a simplified, self-contained version of vera.synth — just
 # enough physics to produce a believable spectrum for the four endmembers
 # and let the trained model classify it.
 # ---------------------------------------------------------------------------
@@ -118,7 +118,7 @@ def _run_inference(features: np.ndarray) -> dict[str, Any]:
 _LAM = np.linspace(340.0, 850.0, N_SPEC)
 _LAM_NORM = (_LAM - _LAM.min()) / (_LAM.max() - _LAM.min())
 
-# Linear endmembers — the same toy fallback used in regoscan.inference.
+# Linear endmembers — the same toy fallback used in vera.inference.
 _ENDMEMBERS = np.stack(
     [
         0.20 + 0.60 * _LAM_NORM,  # olivine
@@ -192,7 +192,7 @@ def _synth_demo(seed: int | None = None) -> dict[str, Any]:
 # FastAPI app — exported as `app` for Vercel's ASGI runtime.
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="Regoscan API (Vercel)", version="0.2.0")
+app = FastAPI(title="VERA API (Vercel)", version="0.2.0")
 
 
 class SpectrumRequest(BaseModel):

@@ -1,6 +1,6 @@
 #pragma once
 // ─────────────────────────────────────────────────────────────────
-// REGOSCAN Hardware Configuration
+// VERA Hardware Configuration
 //
 // Every pin assignment, timing constant, and array dimension lives
 // here. The rest of the codebase references these symbols — never
@@ -12,7 +12,7 @@
 
 #include <cstdint>
 
-namespace regoscan {
+namespace vera {
 
 // ── Wire protocol version (must match bridge.py SensorFrame.v) ──
 constexpr uint8_t WIRE_PROTOCOL_VERSION = 1;
@@ -126,4 +126,4 @@ constexpr uint8_t OLED_HEIGHT  = 64;
 // when running in continuous mode (0 = one-shot triggered by SCAN).
 constexpr uint32_t SCAN_INTERVAL_MS = 0;
 
-}  // namespace regoscan
+}  // namespace vera

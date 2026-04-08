@@ -8,7 +8,7 @@
 
 #include "Illumination.h"
 
-namespace regoscan {
+namespace vera {
 
 void Illumination::init() {
     for (uint8_t i = 0; i < N_LEDS; i++) {
@@ -52,4 +52,4 @@ void Illumination::laserOff() {
     digitalWrite(PIN_LASER_405, LOW);
 }
 
-}  // namespace regoscan
+}  // namespace vera

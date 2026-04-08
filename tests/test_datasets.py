@@ -12,7 +12,7 @@ import pandas as pd
 import pytest
 import torch
 
-from regoscan.datasets import (
+from vera.datasets import (
     NumpyBundle,
     RegoscanSpectraDataset,
     SplitIndices,
@@ -20,10 +20,10 @@ from regoscan.datasets import (
     split_bundle,
     to_bundle,
 )
-from regoscan.io_csv import write_measurements_csv
-from regoscan.schema import N_SPEC, N_LED, N_FEATURES_TOTAL
-from regoscan.synth import Endmembers, synth_dataset
-from regoscan.schema import WAVELENGTHS
+from vera.io_csv import write_measurements_csv
+from vera.schema import N_SPEC, N_LED, N_FEATURES_TOTAL
+from vera.synth import Endmembers, synth_dataset
+from vera.schema import WAVELENGTHS
 
 
 # ---------------------------------------------------------------------------

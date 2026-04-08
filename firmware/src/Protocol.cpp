@@ -10,7 +10,7 @@
 #include <Arduino.h>
 #include <math.h>
 
-namespace regoscan {
+namespace vera {
 
 size_t transmitFrame(const ScanFrame& frame, Print& stream) {
     StaticJsonDocument<JSON_BUFFER_BYTES> doc;
@@ -87,4 +87,4 @@ float normalizeReflectance(uint16_t raw, uint16_t dark, uint16_t white) {
     return result;
 }
 
-}  // namespace regoscan
+}  // namespace vera

@@ -24,7 +24,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Read persisted preference on mount
   useEffect(() => {
-    const stored = localStorage.getItem("regoscan-theme") as Theme | null;
+    const stored = localStorage.getItem("vera-theme") as Theme | null;
     if (stored === "light" || stored === "dark") {
       setTheme(stored);
     }
@@ -40,7 +40,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add("light");
       root.classList.remove("dark");
     }
-    localStorage.setItem("regoscan-theme", theme);
+    localStorage.setItem("vera-theme", theme);
   }, [theme]);
 
   const toggle = useCallback(() => {

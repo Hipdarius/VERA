@@ -1,6 +1,6 @@
-"""Evaluation report for a trained Regoscan run.
+"""Evaluation report for a trained VERA run.
 
-Reads a run directory produced by ``regoscan.train`` and writes a complete
+Reads a run directory produced by ``vera.train`` and writes a complete
 JSON+text report next to it:
 
   - confusion matrix (5×5)
@@ -25,16 +25,16 @@ import numpy as np
 import pandas as pd
 import torch
 
-from regoscan.datasets import (
+from vera.datasets import (
     NumpyBundle,
     RegoscanSpectraDataset,
     sample_level_split,
     split_bundle,
 )
-from regoscan.io_csv import read_measurements_csv
-from regoscan.models.cnn import RegoscanCNN
-from regoscan.models.plsr import build_baseline_features, load_baseline
-from regoscan.schema import INDEX_TO_CLASS, MINERAL_CLASSES, N_CLASSES
+from vera.io_csv import read_measurements_csv
+from vera.models.cnn import RegoscanCNN
+from vera.models.plsr import build_baseline_features, load_baseline
+from vera.schema import INDEX_TO_CLASS, MINERAL_CLASSES, N_CLASSES
 
 
 # ---------------------------------------------------------------------------
@@ -254,7 +254,7 @@ def plot_ilmenite_scatter(
 
 def render_text(report: dict) -> str:
     lines: list[str] = []
-    lines.append(f"# Regoscan evaluation report")
+    lines.append(f"# VERA evaluation report")
     lines.append(f"model: {report['model']}")
     lines.append(f"n_test: {report['n_test']}")
     lines.append("")
@@ -301,8 +301,8 @@ def render_text(report: dict) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--run", required=True, help="run directory from regoscan.train")
-    parser.add_argument("--data", required=True, help="path to a Regoscan CSV")
+    parser.add_argument("--run", required=True, help="run directory from vera.train")
+    parser.add_argument("--data", required=True, help="path to a VERA CSV")
     parser.add_argument("--split", choices=["test", "val", "train"], default="test")
     args = parser.parse_args(argv)
 

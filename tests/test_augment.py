@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from regoscan.augment import (
+from vera.augment import (
     AugmentConfig,
     add_gaussian_noise,
     augment_batch,
@@ -15,7 +15,7 @@ from regoscan.augment import (
     intensity_jitter,
     wavelength_shift,
 )
-from regoscan.schema import N_SPEC
+from vera.schema import N_SPEC
 
 
 @pytest.fixture

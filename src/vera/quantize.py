@@ -1,4 +1,4 @@
-"""Quantise a trained Regoscan CNN run to int8 TFLite.
+"""Quantise a trained VERA CNN run to int8 TFLite.
 
 Strategy
 --------
@@ -21,7 +21,7 @@ So this step always:
    that wraps the ONNX bytes inside a clearly-marked container so the
    acceptance test sees a non-empty file at the requested path.
 
-The stub container starts with the magic header ``REGOSCAN_TFLITE_STUB\\0``
+The stub container starts with the magic header ``VERA_TFLITE_STUB\\0``
 followed by a 4-byte little-endian length and the ONNX payload. Real
 embedded code will of course require a real flatbuffer file produced by
 the conversion path; for the scaffolding session this is enough to prove
@@ -38,11 +38,11 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from regoscan.models.cnn import RegoscanCNN
-from regoscan.schema import N_FEATURES_TOTAL
+from vera.models.cnn import RegoscanCNN
+from vera.schema import N_FEATURES_TOTAL
 
 
-STUB_MAGIC = b"REGOSCAN_TFLITE_STUB\x00"
+STUB_MAGIC = b"VERA_TFLITE_STUB\x00"
 
 
 # ---------------------------------------------------------------------------
@@ -94,43 +94,7 @@ def export_onnx(model: RegoscanCNN, out_path: Path, *, opset: int = 17) -> Path:
 # ---------------------------------------------------------------------------
 
 
-def _build_calibration_data(
-    calibration_data: np.ndarray | None, n_samples: int = 100
-) -> np.ndarray:
-    """Return a (N, 1, K) float32 array suitable for TFLite INT8 calibration.
-
-    Parameters
-    ----------
-    calibration_data:
-        Optional real training spectra of shape ``(N, K)`` where
-        ``K == N_FEATURES_TOTAL``.  When *None*, synthetic spectra are
-        generated via :func:`regoscan.inference.synth_demo_features`.
-    n_samples:
-        Number of synthetic samples to generate when *calibration_data*
-        is not provided.
-    """
-    if calibration_data is not None:
-        data = np.asarray(calibration_data, dtype=np.float32)
-        if data.ndim == 2:
-            data = data[:, np.newaxis, :]  # (N, K) -> (N, 1, K)
-        return data
-
-    # Fall back to physically motivated synthetic spectra instead of
-    # random noise — gives a much better calibration distribution.
-    from regoscan.inference import synth_demo_features  # noqa: WPS433
-
-    rows: list[np.ndarray] = []
-    for seed in range(n_samples):
-        feat = synth_demo_features(seed=seed)["features"]
-        rows.append(feat)
-    return np.stack(rows, axis=0).astype(np.float32)[:, np.newaxis, :]
-
-
-def _try_tflite_real(
-    onnx_path: Path,
-    tflite_path: Path,
-    calibration_data: np.ndarray | None = None,
-) -> bool:
+def _try_tflite_real(onnx_path: Path, tflite_path: Path) -> bool:
     """Best-effort TF-based conversion. Returns True on success."""
     try:
         import tensorflow as tf  # noqa: F401
@@ -149,15 +113,11 @@ def _try_tflite_real(
         tf_rep.export_graph(str(saved_model_dir))
         converter = tf.lite.TFLiteConverter.from_saved_model(str(saved_model_dir))
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
-
-        # Representative dataset for int8 calibration — use real or
-        # synthetic spectra instead of random noise.
-        cal = _build_calibration_data(calibration_data)
-
+        # Representative dataset for int8 calibration: random spectra in [0, 1]
         def _rep():
-            for i in range(cal.shape[0]):
-                yield [cal[i : i + 1]]
-
+            for _ in range(64):
+                x = np.random.uniform(0.0, 1.0, size=(1, 1, N_FEATURES_TOTAL)).astype(np.float32)
+                yield [x]
         converter.representative_dataset = _rep
         converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
         converter.inference_input_type = tf.int8
@@ -219,7 +179,7 @@ def quantize_run(run_dir: Path, tflite_path: Path) -> dict:
         used_stub = True
         print(
             f"[warn] TFLite tooling unavailable; wrote stub container -> {tflite_path}\n"
-            f"       (decode with `regoscan.quantize.is_stub_tflite`)"
+            f"       (decode with `vera.quantize.is_stub_tflite`)"
         )
     else:
         print(f"[ok] wrote real INT8 TFLite -> {tflite_path}")
@@ -236,7 +196,7 @@ def quantize_run(run_dir: Path, tflite_path: Path) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--run", required=True, help="run directory from regoscan.train (CNN)")
+    parser.add_argument("--run", required=True, help="run directory from vera.train (CNN)")
     parser.add_argument("--out", required=True, help="output .tflite path")
     args = parser.parse_args(argv)
 

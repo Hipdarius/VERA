@@ -16,7 +16,7 @@ const ENDMEMBER_COLORS: Record<string, { dark: string; light: string }> = {
   olivine: { dark: "#4ade80", light: "#16a34a" },
   pyroxene: { dark: "#fb923c", light: "#ea580c" },
   anorthite: { dark: "#60a5fa", light: "#2563eb" },
-  ilmenite: { dark: "#94a3b8", light: "#64748b" },
+  ilmenite: { dark: "#8b5cf6", light: "#7c3aed" },
 };
 
 function getEndmemberColor(name: string, isLight: boolean): string {
@@ -74,12 +74,12 @@ export function SpectrumChart({
     return row;
   });
 
-  const gridColor = isLight ? "#e2e8f0" : "#1f2533";
+  const gridColor = isLight ? "#e2e8f0" : "#1e293b";
   const axisStroke = isLight ? "#cbd5e1" : "#475569";
   const tickFill = isLight ? "#64748b" : "#94a3b8";
   const labelFill = isLight ? "#94a3b8" : "#64748b";
-  const tooltipBg = isLight ? "#ffffff" : "#0a0d14";
-  const tooltipBorder = isLight ? "1px solid #e2e8f0" : "1px solid #22d3ee44";
+  const tooltipBg = isLight ? "#ffffff" : "#0f172a";
+  const tooltipBorder = isLight ? "1px solid #e2e8f0" : "1px solid #38bdf844";
   const tooltipColor = isLight ? "#0f172a" : "#e2e8f0";
 
   return (
@@ -89,8 +89,8 @@ export function SpectrumChart({
           <LineChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 8 }}>
             <defs>
               <linearGradient id="specGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor={isLight ? "#0284c7" : "#22d3ee"} stopOpacity={0.9} />
-                <stop offset="60%" stopColor={isLight ? "#0284c7" : "#22d3ee"} stopOpacity={0.9} />
+                <stop offset="0%" stopColor={isLight ? "#0284c7" : "#38bdf8"} stopOpacity={0.9} />
+                <stop offset="60%" stopColor={isLight ? "#0284c7" : "#38bdf8"} stopOpacity={0.9} />
                 <stop offset="100%" stopColor={isLight ? "#d97706" : "#fbbf24"} stopOpacity={0.9} />
               </linearGradient>
             </defs>

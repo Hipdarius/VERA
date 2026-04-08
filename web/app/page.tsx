@@ -98,12 +98,12 @@ export default function Home() {
     [scanHistory]
   );
 
-  const cyanText = isLight ? "#0284c7" : "#22d3ee";
-  const amberText = isLight ? "#d97706" : "#fbbf24";
+  const cyanText = isLight ? "#0284c7" : "#38bdf8";
+  const amberText = isLight ? "#f59e0b" : "#f59e0b";
   const mutedText = isLight ? "#94a3b8" : "#64748b";
-  const borderColor = isLight ? "rgba(15, 23, 42, 0.12)" : "rgba(34, 211, 238, 0.15)";
-  const panelBg = isLight ? "rgba(255,255,255,0.85)" : "rgba(10, 13, 20, 0.7)";
-  const telemetryBorder = isLight ? "#e2e8f0" : "#161b27";
+  const borderColor = isLight ? "rgba(15, 23, 42, 0.12)" : "rgba(56, 189, 248, 0.15)";
+  const panelBg = isLight ? "rgba(255,255,255,0.85)" : "rgba(15, 23, 42, 0.7)";
+  const telemetryBorder = isLight ? "#e2e8f0" : "#1e293b";
 
   return (
     <main className="relative min-h-screen pb-24">
@@ -241,7 +241,7 @@ export default function Home() {
 
           <MissionPanel title="Model Provenance" delay={0.2}>
             <dl className="space-y-4">
-              <Telemetry label="Model" value={scan?.model_version ?? "regoscan-resnet"} color={cyanText} borderColor={telemetryBorder} labelColor={mutedText} />
+              <Telemetry label="Model" value={scan?.model_version ?? "vera-resnet"} color={cyanText} borderColor={telemetryBorder} labelColor={mutedText} />
               <Telemetry label="Schema" value={meta?.schema_version ?? "\u2014"} color={cyanText} borderColor={telemetryBorder} labelColor={mutedText} />
               <Telemetry label="ONNX SHA-256" value={meta?.model_sha256 ?? "\u2014"} color={cyanText} borderColor={telemetryBorder} labelColor={mutedText} mono />
               <Telemetry label="Features" value={meta ? `${meta.n_features_total}` : "\u2014"} color={cyanText} borderColor={telemetryBorder} labelColor={mutedText} />
@@ -264,7 +264,7 @@ export default function Home() {
           className="mt-6 flex flex-col items-center gap-1 text-center font-mono text-[10px] uppercase tracking-widest"
           style={{ color: mutedText }}
         >
-          <span>Regoscan · 1D ResNet · ONNXRuntime · FastAPI</span>
+          <span>VERA · 1D ResNet · ONNXRuntime · FastAPI</span>
           <span>Inference at the edge — same model that fits the embedded probe.</span>
         </footer>
       </div>

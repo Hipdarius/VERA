@@ -30,13 +30,13 @@ export function Hero({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="flex items-center gap-3 text-xs font-mono uppercase tracking-[0.3em]"
-            style={{ color: theme === "light" ? "#0369a1" : "rgba(34, 211, 238, 0.8)" }}
+            style={{ color: theme === "light" ? "#0369a1" : "rgba(56, 189, 248, 0.8)" }}
           >
             <span
               className="inline-block h-2 w-2 animate-pulse-soft rounded-full"
               style={{
-                backgroundColor: theme === "light" ? "#0284c7" : "#22d3ee",
-                boxShadow: theme === "light" ? "0 0 12px rgba(2, 132, 199, 0.4)" : "0 0 24px rgba(34, 211, 238, 0.35)",
+                backgroundColor: theme === "light" ? "#0284c7" : "#38bdf8",
+                boxShadow: theme === "light" ? "0 0 12px rgba(2, 132, 199, 0.4)" : "0 0 24px rgba(56, 189, 248, 0.35)",
               }}
             />
             Mission Control · Lunar Surface Operations
@@ -46,8 +46,8 @@ export function Hero({
             onClick={toggle}
             className="flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-all"
             style={{
-              borderColor: theme === "light" ? "#cbd5e1" : "rgba(34, 211, 238, 0.3)",
-              background: theme === "light" ? "rgba(255,255,255,0.8)" : "rgba(10, 13, 20, 0.6)",
+              borderColor: theme === "light" ? "#cbd5e1" : "rgba(56, 189, 248, 0.3)",
+              background: theme === "light" ? "rgba(255,255,255,0.8)" : "rgba(15, 23, 42, 0.6)",
               color: theme === "light" ? "#475569" : "#94a3b8",
             }}
           >
@@ -75,11 +75,11 @@ export function Hero({
             className="bg-clip-text text-transparent"
             style={{
               backgroundImage: theme === "light"
-                ? "linear-gradient(to right, #0284c7, #0f172a, #d97706)"
-                : "linear-gradient(to right, #22d3ee, #f1f5f9, #fbbf24)",
+                ? "linear-gradient(to right, #0284c7, #0f172a, #7c3aed)"
+                : "linear-gradient(to right, #38bdf8, #f1f5f9, #8b5cf6)",
             }}
           >
-            REGOSCAN
+            VERA
           </span>
           <span
             className="block text-base font-normal tracking-wider sm:text-lg"
@@ -98,7 +98,7 @@ export function Hero({
         >
           A compact spectrometer that fingerprints lunar regolith in real time.
           Click{" "}
-          <span style={{ color: theme === "light" ? "#0284c7" : "#22d3ee" }}>
+          <span style={{ color: theme === "light" ? "#0284c7" : "#38bdf8" }}>
             Initiate Scan
           </span>{" "}
           to fire a synthetic acquisition through the trained 1D&nbsp;ResNet and
@@ -123,8 +123,8 @@ export function Hero({
 
 function Pill({ label, value, ok, theme }: { label: string; value: string; ok: boolean; theme: string }) {
   const isLight = theme === "light";
-  const okColor = isLight ? "#0284c7" : "#22d3ee";
-  const warnColor = isLight ? "#d97706" : "#fbbf24";
+  const okColor = isLight ? "#0284c7" : "#34d399";
+  const warnColor = isLight ? "#f59e0b" : "#f59e0b";
   const color = ok ? okColor : warnColor;
 
   return (
@@ -132,11 +132,11 @@ function Pill({ label, value, ok, theme }: { label: string; value: string; ok: b
       className="flex items-center gap-2 rounded-full border px-3 py-1"
       style={{
         borderColor: ok
-          ? (isLight ? "rgba(2, 132, 199, 0.3)" : "rgba(34, 211, 238, 0.3)")
-          : (isLight ? "rgba(217, 119, 6, 0.3)" : "rgba(251, 191, 36, 0.3)"),
-        background: isLight ? "rgba(255,255,255,0.6)" : "rgba(10, 13, 20, 0.6)",
+          ? (isLight ? "rgba(2, 132, 199, 0.3)" : "rgba(52, 211, 153, 0.3)")
+          : (isLight ? "rgba(245, 158, 11, 0.3)" : "rgba(245, 158, 11, 0.3)"),
+        background: isLight ? "rgba(255,255,255,0.6)" : "rgba(15, 23, 42, 0.6)",
         color,
-        boxShadow: isLight ? "none" : (ok ? "0 0 24px rgba(34, 211, 238, 0.35)" : "0 0 24px rgba(251, 191, 36, 0.35)"),
+        boxShadow: isLight ? "none" : (ok ? "0 0 24px rgba(52, 211, 153, 0.35)" : "0 0 24px rgba(245, 158, 11, 0.35)"),
       }}
     >
       <span style={{ color: isLight ? "#94a3b8" : "#64748b" }}>{label}</span>

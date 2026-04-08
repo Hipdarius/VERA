@@ -24,8 +24,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from regoscan.preprocess import continuum_removal_batch
-from regoscan.schema import LED_WAVELENGTHS_NM, WAVELENGTHS
+from vera.preprocess import continuum_removal_batch
+from vera.schema import LED_WAVELENGTHS_NM, WAVELENGTHS
 
 EPS = 1e-6
 

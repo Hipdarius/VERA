@@ -1,4 +1,4 @@
-"""Dataset assembly for Regoscan training.
+"""Dataset assembly for VERA training.
 
 The single most important thing this module enforces is **sample-level
 splits**: every measurement of a given ``sample_id`` must end up in the same
@@ -21,14 +21,14 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
-from regoscan.augment import AugmentConfig, augment_spectrum
-from regoscan.io_csv import (
+from vera.augment import AugmentConfig, augment_spectrum
+from vera.io_csv import (
     extract_labels,
     extract_leds,
     extract_lif,
     extract_spectra,
 )
-from regoscan.schema import N_SPEC
+from vera.schema import N_SPEC
 
 
 # ---------------------------------------------------------------------------

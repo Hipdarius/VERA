@@ -8,7 +8,7 @@
 
 #include "C12880MA.h"
 
-namespace regoscan {
+namespace vera {
 
 void C12880MA::init() {
     pinMode(PIN_SPEC_CLK,   OUTPUT);
@@ -85,4 +85,4 @@ void C12880MA::readSpectrum(uint16_t* buffer) {
     }
 }
 
-}  // namespace regoscan
+}  // namespace vera

@@ -1,5 +1,5 @@
 """
-Regoscan Dashboard (Streamlit).
+VERA Dashboard (Streamlit).
 
 Lets us explore the canonical CSV measurements, plot the spectra, and run
 inference using the trained PLSR baseline.
@@ -15,30 +15,30 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Path resolution for the local 'regoscan' package
+# Path resolution for the local 'vera' package
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from regoscan.datasets import to_bundle 
-from regoscan.io_csv import (
+from vera.datasets import to_bundle 
+from vera.io_csv import (
     SchemaError,
     extract_leds,
     extract_lif,
     extract_spectra,
     read_measurements_csv,
 )
-from regoscan.models.plsr import build_baseline_features, load_baseline 
-from regoscan.schema import (
+from vera.models.plsr import build_baseline_features, load_baseline 
+from vera.schema import (
     INDEX_TO_CLASS,
     LED_WAVELENGTHS_NM,
     MINERAL_CLASSES,
     WAVELENGTHS,
 )
 
-st.set_page_config(page_title="Regoscan", layout="wide")
-st.title("Regoscan — Optical Probe Dashboard")
+st.set_page_config(page_title="VERA", layout="wide")
+st.title("VERA — Optical Probe Dashboard")
 st.caption("Mineral classification and spectral explorer. Load a CSV to begin.")
 
 # Sidebar - data loading

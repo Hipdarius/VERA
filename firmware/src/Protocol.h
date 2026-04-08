@@ -22,7 +22,7 @@
 #include <ArduinoJson.h>
 #include "Config.h"
 
-namespace regoscan {
+namespace vera {
 
 /// Raw data collected during one scan cycle.
 /// All arrays are statically sized — no heap.
@@ -56,4 +56,4 @@ float readTemperatureC();
 /// @param white     Broadband-frame ADC count (all LEDs on).
 float normalizeReflectance(uint16_t raw, uint16_t dark, uint16_t white);
 
-}  // namespace regoscan
+}  // namespace vera

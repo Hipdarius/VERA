@@ -17,11 +17,11 @@ export function ScanHistory({
 
   if (history.length === 0) return null;
 
-  const cyanText = isLight ? "#0284c7" : "#22d3ee";
-  const amberText = isLight ? "#d97706" : "#fbbf24";
+  const cyanText = isLight ? "#0284c7" : "#38bdf8";
+  const amberText = isLight ? "#f59e0b" : "#f59e0b";
   const mutedText = isLight ? "#94a3b8" : "#64748b";
-  const borderColor = isLight ? "#e2e8f0" : "#1f2533";
-  const selectedBg = isLight ? "rgba(2, 132, 199, 0.06)" : "rgba(34, 211, 238, 0.06)";
+  const borderColor = isLight ? "#e2e8f0" : "#1e293b";
+  const selectedBg = isLight ? "rgba(2, 132, 199, 0.06)" : "rgba(56, 189, 248, 0.06)";
   const hoverBg = isLight ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.02)";
 
   return (

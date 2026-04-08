@@ -10,8 +10,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from regoscan.io_csv import validate_dataframe, write_measurements_csv
-from regoscan.schema import (
+from vera.io_csv import validate_dataframe, write_measurements_csv
+from vera.schema import (
     LIF_COL,
     MINERAL_CLASSES,
     N_LED,
@@ -19,7 +19,7 @@ from regoscan.schema import (
     WAVELENGTHS,
     Measurement,
 )
-from regoscan.synth import (
+from vera.synth import (
     ENDMEMBER_INDEX,
     ENDMEMBER_NAMES,
     Endmembers,

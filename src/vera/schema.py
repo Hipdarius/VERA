@@ -1,4 +1,4 @@
-"""Canonical measurement schema for Regoscan.
+"""Canonical measurement schema for VERA.
 
 This module is the **contract** between the (future) hardware acquisition
 layer and the entire software stack. Every other module that touches a

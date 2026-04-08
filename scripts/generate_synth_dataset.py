@@ -1,6 +1,6 @@
-"""Generate a synthetic Regoscan dataset CSV.
+"""Generate a synthetic VERA dataset CSV.
 
-Wraps :func:`regoscan.synth.synth_dataset` with a thin CLI.
+Wraps :func:`vera.synth.synth_dataset` with a thin CLI.
 
 Example
 -------
@@ -21,8 +21,8 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from regoscan.io_csv import write_measurements_csv  # noqa: E402
-from regoscan.synth import load_endmembers, synth_dataset  # noqa: E402
+from vera.io_csv import write_measurements_csv  # noqa: E402
+from vera.synth import load_endmembers, synth_dataset  # noqa: E402
 
 
 DEFAULT_ENDMEMBERS = ROOT / "data" / "cache" / "usgs_endmembers.npz"

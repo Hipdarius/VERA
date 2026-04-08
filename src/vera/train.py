@@ -1,12 +1,12 @@
 """
-Training script for Regoscan.
+Training script for VERA.
 
 Handles two paths:
 1. Baseline (PLSR + RandomForest) - good for regression accuracy.
 2. CNN (1D ResNet) - better at mineral classification.
 
 Example:
-  python -m regoscan.train --model cnn --data data/synth_v2.csv --out runs/cnn_v2
+  python -m vera.train --model cnn --data data/synth_v2.csv --out runs/cnn_v2
 """
 
 import argparse
@@ -17,27 +17,25 @@ from dataclasses import asdict
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 
-from regoscan.datasets import (
+from vera.datasets import (
     NumpyBundle,
     RegoscanSpectraDataset,
     sample_level_split,
     split_bundle,
     to_bundle,
 )
-from regoscan.io_csv import read_measurements_csv
-from regoscan.models.cnn import RegoscanCNN, assert_input_size, count_params
-from regoscan.models.plsr import (
+from vera.io_csv import read_measurements_csv
+from vera.models.cnn import RegoscanCNN, assert_input_size, count_params
+from vera.models.plsr import (
     BaselineBundle,
     build_baseline_features,
     fit_baseline,
     save_baseline,
 )
-from regoscan.schema import (
-    CLASS_TO_INDEX,
+from vera.schema import (
     INDEX_TO_CLASS,
     MINERAL_CLASSES,
     N_CLASSES,
@@ -72,138 +70,6 @@ def quick_metrics(
     return {"top1_acc": acc, "ilm_rmse": rmse, "ilm_r2": r2}
 
 
-def _run_cv_plsr(
-    df: pd.DataFrame,
-    n_folds: int,
-    n_components: int,
-    n_estimators: int,
-    seed: int,
-) -> list[dict[str, float]]:
-    """Run stratified k-fold CV for the PLSR baseline. Returns per-fold metrics."""
-    from sklearn.model_selection import StratifiedGroupKFold
-
-    sample_ids = df["sample_id"].to_numpy()
-    mineral_classes = df["mineral_class"].map(CLASS_TO_INDEX).to_numpy()
-
-    sgkf = StratifiedGroupKFold(n_splits=n_folds, shuffle=True, random_state=seed)
-    fold_results: list[dict[str, float]] = []
-
-    for fold_idx, (train_idx, val_idx) in enumerate(
-        sgkf.split(df, y=mineral_classes, groups=sample_ids)
-    ):
-        train_bundle = to_bundle(df.iloc[train_idx])
-        val_bundle = to_bundle(df.iloc[val_idx])
-
-        bb = fit_baseline(
-            train_bundle,
-            n_components=n_components,
-            n_estimators=n_estimators,
-            seed=seed,
-        )
-        X_val = build_baseline_features(val_bundle)
-        pred_cls, pred_ilm = bb.predict(X_val)
-        m = quick_metrics(pred_cls, pred_ilm, val_bundle.class_idx, val_bundle.ilmenite)
-        m["fold"] = fold_idx
-        fold_results.append(m)
-        print(
-            f"  fold {fold_idx + 1}/{n_folds}  "
-            f"acc={m['top1_acc']:.3f}  rmse={m['ilm_rmse']:.3f}  R2={m['ilm_r2']:.3f}"
-        )
-
-    return fold_results
-
-
-def _run_cv_cnn(
-    df: pd.DataFrame,
-    n_folds: int,
-    args: argparse.Namespace,
-) -> list[dict[str, float]]:
-    """Run stratified k-fold CV for the CNN. Returns per-fold metrics."""
-    from sklearn.model_selection import StratifiedGroupKFold
-
-    sample_ids = df["sample_id"].to_numpy()
-    mineral_classes = df["mineral_class"].map(CLASS_TO_INDEX).to_numpy()
-
-    sgkf = StratifiedGroupKFold(n_splits=n_folds, shuffle=True, random_state=args.seed)
-    fold_results: list[dict[str, float]] = []
-
-    for fold_idx, (train_idx, val_idx) in enumerate(
-        sgkf.split(df, y=mineral_classes, groups=sample_ids)
-    ):
-        set_global_seed(args.seed)
-        train_bundle = to_bundle(df.iloc[train_idx])
-        val_bundle = to_bundle(df.iloc[val_idx])
-
-        train_ds = RegoscanSpectraDataset(train_bundle, augment=True, seed=args.seed)
-        val_ds = RegoscanSpectraDataset(val_bundle, augment=False)
-
-        train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True)
-        val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False)
-
-        model = RegoscanCNN(dropout=args.dropout, seed=args.seed)
-        optim = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optim, T_max=max(1, args.epochs), eta_min=args.lr * 0.02
-        )
-        cls_loss_fn = torch.nn.CrossEntropyLoss()
-        reg_loss_fn = torch.nn.SmoothL1Loss()
-
-        best_val_acc = -1.0
-        best_state = None
-
-        for epoch in range(1, args.epochs + 1):
-            model.train()
-            for x, y_cls, y_ilm in train_loader:
-                optim.zero_grad()
-                logits, ilm = model(x)
-                loss = cls_loss_fn(logits, y_cls) + args.reg_weight * reg_loss_fn(ilm, y_ilm)
-                loss.backward()
-                optim.step()
-            scheduler.step()
-            val_m = _eval_loader(model, val_loader)
-            if val_m["top1_acc"] > best_val_acc + 1e-6:
-                best_val_acc = val_m["top1_acc"]
-                best_state = {k: v.clone() for k, v in model.state_dict().items()}
-
-        # Evaluate best checkpoint
-        if best_state is not None:
-            model.load_state_dict(best_state)
-        m = _eval_loader(model, val_loader)
-        m["fold"] = fold_idx
-        fold_results.append(m)
-        print(
-            f"  fold {fold_idx + 1}/{n_folds}  "
-            f"acc={m['top1_acc']:.3f}  rmse={m['ilm_rmse']:.3f}  R2={m['ilm_r2']:.3f}"
-        )
-
-    return fold_results
-
-
-def _summarise_cv(fold_results: list[dict[str, float]], out: Path) -> dict:
-    """Compute mean +/- std of CV metrics, write to cv_results.json, return summary."""
-    accs = np.array([f["top1_acc"] for f in fold_results])
-    rmses = np.array([f["ilm_rmse"] for f in fold_results])
-    r2s = np.array([f["ilm_r2"] for f in fold_results])
-
-    summary = {
-        "n_folds": len(fold_results),
-        "per_fold": fold_results,
-        "mean_accuracy": float(accs.mean()),
-        "std_accuracy": float(accs.std()),
-        "mean_rmse": float(rmses.mean()),
-        "std_rmse": float(rmses.std()),
-        "mean_r2": float(r2s.mean()),
-        "std_r2": float(r2s.std()),
-    }
-    (out / "cv_results.json").write_text(json.dumps(summary, indent=2))
-
-    print(f"\nCross-validation summary ({len(fold_results)} folds):")
-    print(f"  accuracy: {accs.mean():.3f} +/- {accs.std():.3f}")
-    print(f"  RMSE:     {rmses.mean():.3f} +/- {rmses.std():.3f}")
-    print(f"  R2:       {r2s.mean():.3f} +/- {r2s.std():.3f}")
-    return summary
-
-
 def run_plsr(args: argparse.Namespace) -> int:
     """The statistical baseline path."""
     out = Path(args.out)
@@ -222,14 +88,7 @@ def run_plsr(args: argparse.Namespace) -> int:
 
     # Hyperparams for PLSR: 8 components seems to be the sweet spot for VIS/NIR.
     # More than 12 starts to overfit the synthetic noise.
-    n_components = args.pls_components
-    n_estimators = args.rf_estimators
-    bundle = fit_baseline(
-        bundles["train"],
-        n_components=n_components,
-        n_estimators=n_estimators,
-        seed=args.seed,
-    )
+    bundle = fit_baseline(bundles["train"], n_components=8, n_estimators=200, seed=args.seed)
     save_baseline(bundle, out / "model.pkl")
 
     metrics: dict[str, dict[str, float]] = {}
@@ -247,8 +106,8 @@ def run_plsr(args: argparse.Namespace) -> int:
         "data": str(Path(args.data).resolve()),
         "seed": args.seed,
         "metrics": metrics,
-        "n_components": n_components,
-        "n_estimators": n_estimators,
+        "n_components": 8,
+        "n_estimators": 200,
     }
     (out / "run.json").write_text(json.dumps(manifest, indent=2))
     (out / "split.json").write_text(
@@ -258,18 +117,6 @@ def run_plsr(args: argparse.Namespace) -> int:
             "test_samples": list(split.test_samples),
         }, indent=2)
     )
-
-    # Optional k-fold cross-validation
-    if args.cv_folds > 0:
-        print(f"\nRunning {args.cv_folds}-fold stratified CV (PLSR)...")
-        fold_results = _run_cv_plsr(
-            df,
-            n_folds=args.cv_folds,
-            n_components=n_components,
-            n_estimators=n_estimators,
-            seed=args.seed,
-        )
-        _summarise_cv(fold_results, out)
 
     print("\nPLSR Baseline Metrics:")
     for k, v in metrics.items():
@@ -300,7 +147,7 @@ def run_cnn(args: argparse.Namespace) -> int:
     val_loader = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False)
     test_loader = DataLoader(test_ds, batch_size=args.batch_size, shuffle=False)
 
-    model = RegoscanCNN(dropout=args.dropout, seed=args.seed)
+    model = RegoscanCNN(seed=args.seed)
     print(f"CNN parameters: {count_params(model):,}")
     
     # AdamW + Cosine Annealing is a solid combo for this type of spectral data.
@@ -325,7 +172,7 @@ def run_cnn(args: argparse.Namespace) -> int:
             optim.zero_grad()
             logits, ilm = model(x)
             # Weighted loss: classification is primary, regression is secondary but important.
-            loss = cls_loss_fn(logits, y_cls) + args.reg_weight * reg_loss_fn(ilm, y_ilm)
+            loss = cls_loss_fn(logits, y_cls) + 0.5 * reg_loss_fn(ilm, y_ilm)
             loss.backward()
             optim.step()
             running_loss += float(loss.item())
@@ -379,19 +226,11 @@ def run_cnn(args: argparse.Namespace) -> int:
         "class_names": list(MINERAL_CLASSES),
         "input_shape": [1, N_FEATURES_TOTAL],
     }, indent=2))
-    (out / "split.json").write_text(
-        json.dumps({
-            "train_samples": list(split.train_samples),
-            "val_samples": list(split.val_samples),
-            "test_samples": list(split.test_samples),
-        }, indent=2)
-    )
-    
-    # Optional k-fold cross-validation
-    if args.cv_folds > 0:
-        print(f"\nRunning {args.cv_folds}-fold stratified CV (CNN)...")
-        fold_results = _run_cv_cnn(df, n_folds=args.cv_folds, args=args)
-        _summarise_cv(fold_results, out)
+    (out / "split.json").write_text(json.dumps({
+        "train_samples": list(split.train_samples),
+        "val_samples": list(split.val_samples),
+        "test_samples": list(split.test_samples),
+    }, indent=2))
 
     print("\nCNN Final Metrics:")
     for k, v in final_metrics.items():
@@ -448,9 +287,9 @@ def _eval_loader(model: RegoscanCNN, loader: DataLoader) -> dict[str, float]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Train a Regoscan model")
+    p = argparse.ArgumentParser(description="Train a VERA model")
     p.add_argument("--model", choices=["plsr", "cnn"], required=True)
-    p.add_argument("--data", required=True, help="path to a Regoscan CSV")
+    p.add_argument("--data", required=True, help="path to a VERA CSV")
     p.add_argument("--out", required=True, help="output run directory")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--val-frac", type=float, default=0.15)
@@ -459,17 +298,6 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--batch-size", type=int, default=32)
     p.add_argument("--lr", type=float, default=2e-3)
     p.add_argument("--early-stopping-patience", type=int, default=15)
-    # Configurable hyperparameters (defaults match original hardcoded values)
-    p.add_argument("--reg-weight", type=float, default=0.5,
-                   help="regression loss multiplier (default: 0.5)")
-    p.add_argument("--rf-estimators", type=int, default=200,
-                   help="RandomForest n_estimators (default: 200)")
-    p.add_argument("--pls-components", type=int, default=8,
-                   help="PLS n_components (default: 8)")
-    p.add_argument("--dropout", type=float, default=0.25,
-                   help="CNN dropout rate (default: 0.25)")
-    p.add_argument("--cv-folds", type=int, default=0,
-                   help="number of stratified k-fold CV folds (0=disabled, use hold-out)")
     return p
 
 

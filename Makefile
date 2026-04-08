@@ -8,7 +8,7 @@ lint:
 	uv run ruff format --check src/ apps/ scripts/ tests/
 
 train:
-	uv run python -m regoscan.train --model cnn --data data/synth_v1.csv --epochs 50 --out runs/cnn_v2/ --cv-folds 5
+	uv run python -m vera.train --model cnn --data data/synth_v1.csv --epochs 50 --out runs/cnn_v2/ --cv-folds 5
 
 data-gen:
 	uv run python scripts/generate_synth_dataset.py --n-samples 400 --measurements-per-sample 10 --out data/synth_v1.csv

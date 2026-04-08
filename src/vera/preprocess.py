@@ -2,7 +2,7 @@
 
 These functions all operate on plain ``numpy`` arrays — they know nothing
 about the canonical CSV. The training pipeline pulls a ``(N, 288)`` block
-out via :func:`regoscan.io_csv.extract_spectra` and pushes it through here.
+out via :func:`vera.io_csv.extract_spectra` and pushes it through here.
 
 All functions are vectorised over the leading axis (samples).
 """

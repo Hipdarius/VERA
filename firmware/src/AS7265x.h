@@ -12,10 +12,10 @@
 // is verified on the logic analyzer.
 //
 // Usage:
-//   regoscan::AS7265x sensor;
+//   vera::AS7265x sensor;
 //   sensor.init();
 //   if (sensor.isConnected()) {
-//       float bands[regoscan::N_AS7265X_BANDS];
+//       float bands[vera::N_AS7265X_BANDS];
 //       sensor.readAllBands(bands);
 //   }
 //
@@ -28,7 +28,7 @@
 #include <cstdint>
 #include "Config.h"
 
-namespace regoscan {
+namespace vera {
 
 /// Driver for the AMS AS7265x 18-channel spectral triad sensor.
 ///
@@ -60,4 +60,4 @@ public:
     void readAllBands(float* buffer);
 };
 
-}  // namespace regoscan
+}  // namespace vera

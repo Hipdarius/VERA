@@ -22,7 +22,7 @@
 #include <Arduino.h>
 #include "Config.h"
 
-namespace regoscan {
+namespace vera {
 
 class C12880MA {
 public:
@@ -56,4 +56,4 @@ private:
     inline void clockPulse();
 };
 
-}  // namespace regoscan
+}  // namespace vera

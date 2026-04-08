@@ -62,10 +62,10 @@ export function UploadPanel({
   const [fileName, setFileName] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const cyanText = isLight ? "#0284c7" : "#22d3ee";
+  const cyanText = isLight ? "#0284c7" : "#38bdf8";
   const mutedText = isLight ? "#94a3b8" : "#64748b";
-  const amberText = isLight ? "#d97706" : "#fbbf24";
-  const borderColor = isLight ? "rgba(15, 23, 42, 0.12)" : "rgba(34, 211, 238, 0.15)";
+  const amberText = isLight ? "#f59e0b" : "#f59e0b";
+  const borderColor = isLight ? "rgba(15, 23, 42, 0.12)" : "rgba(56, 189, 248, 0.15)";
 
   const handleFile = useCallback(
     async (file: File) => {

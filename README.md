@@ -1,225 +1,108 @@
-<div align="center">
-
-# REGOSCAN
+# VERA
 
 **Compact VIS/NIR + 405 nm LIF Probe for Real-Time Lunar Regolith Mineralogy**
 
-[![CI](https://github.com/Hipdarius/RegoScan/actions/workflows/ci.yml/badge.svg)](https://github.com/Hipdarius/RegoScan/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776ab.svg)](https://python.org)
-[![Tests: 136 passed](https://img.shields.io/badge/Tests-136%20passed-brightgreen.svg)](#testing)
-
-A low-power optical probe for identifying lunar minerals and estimating ilmenite mass fraction in real time, designed for ISRU rovers.
-
-[Quick Start](#quick-start) &middot; [Architecture](#architecture) &middot; [API Reference](#api-reference) &middot; [Contributing](CONTRIBUTING.md)
-
-</div>
+VERA (Visible & Emission Regolith Assessment) is a lightweight, low-power optical probe designed for lunar In-Situ Resource Utilization (ISRU) prospecting. By combining 288-channel visible/NIR diffuse reflectance spectroscopy with 405 nm Laser-Induced Fluorescence (LIF), it identifies key mineral phases and estimates ilmenite (FeTiO₃) mass fraction in real-time.
 
 ---
 
-## Why REGOSCAN
+## 🚀 Overview
 
-Lunar oxygen extraction depends on finding ilmenite (FeTiO3), a primary feedstock for hydrogen reduction. Current prospecting instruments weigh kilograms and cost six figures. REGOSCAN targets **< 300 g**, **< 2 W**, and **< 500 EUR** in parts, with millisecond-latency classification on an ESP32.
+The project provides a complete software-hardware co-design stack, validated on high-fidelity synthetic spectra derived from USGS and RELAB endmembers. It targets the next generation of lunar rovers and ISRU pilot plants, where identifying oxygen-rich minerals (like ilmenite) is a mission-critical bottleneck.
 
-The probe combines three sensing modalities into a single 301-feature measurement:
-
-| Modality | Sensor | Channels | What it measures |
-|----------|--------|----------|-----------------|
-| VIS/NIR reflectance | Hamamatsu C12880MA | 288 (340--850 nm) | Spectral absorption features |
-| Narrowband LED | 12 discrete LEDs | 12 (385--940 nm) | Targeted spectral features |
-| Laser-induced fluorescence | 405 nm diode + 450 nm LP filter | 1 | Ilmenite suppresses fluorescence |
+### Key Capabilities:
+- **5-Way Mineral Classification**: Identifies `ilmenite_rich`, `olivine_rich`, `pyroxene_rich`, `anorthositic`, and `mixed` regolith.
+- **Continuous Regression**: Estimates `ilmenite_fraction` (0–100%) with high precision.
+- **Multi-Modal Input**: Integrates 288 reflectance channels (340–850 nm), 12 narrowband LED reflectances, and 1 LIF photodiode channel.
+- **Embedded-Ready ML**: Includes a lightweight 1D ResNet (PyTorch/ONNX) and a statistical PLSR baseline.
 
 ---
 
-## Performance
+## 📊 Performance (v2 Dataset)
 
-Current benchmarks on held-out synthetic lunar samples:
+Current benchmarks on a held-out test set of 3,000 synthetic lunar samples:
 
-| Model | Task | Metric | Value |
-|:------|:-----|:-------|------:|
-| 1D ResNet (670k params) | Classification | Top-1 accuracy | **93.2 %** |
-| PLSR baseline | Regression | Ilmenite R^2 | **0.967** |
-| PLSR baseline | Regression | Ilmenite RMSE | **0.037** |
+| Model | Task | Metric | Performance |
+|-------|------|--------|-------------|
+| **1D ResNet** | Classification | Top-1 Accuracy | **93.2%** |
+| **PLSR** | Regression | Ilmenite R² | **0.967** |
+| **PLSR** | Regression | Ilmenite RMSE | **0.037** |
 
-The CNN classifies; the PLSR provides precise ilmenite mass fractions. Both are reported in the paper.
+The hybrid approach uses the CNN for robust class identification and the PLSR baseline for precise mass-fraction estimation, offering a "best-of-both-worlds" analytical tool.
 
 ---
 
-## Quick Start
+## 🛠️ Installation
 
-### Prerequisites
-
-- Python 3.11+ with [uv](https://docs.astral.sh/uv/)
-- Node.js 20+ (web dashboard)
-- PlatformIO (firmware, optional)
-
-### Setup
+This project uses `uv` for lightning-fast dependency management.
 
 ```bash
-git clone https://github.com/Hipdarius/RegoScan.git && cd RegoScan
+# Clone the repository
+git clone https://github.com/Hipdarius/VERA.git
+cd VERA
 
-uv sync --all-extras            # Python environment
-cd web && npm install && cd ..   # Web frontend
+# Install dependencies and sync environment
+uv sync
 ```
 
-### Run
+---
+
+## 🏃 Quick Start (The "Acceptance Test")
+
+To verify the entire pipeline from data generation to quantized inference:
 
 ```bash
-make data-gen                    # Generate 4,000 synthetic spectra
-make train                       # Train CNN with 5-fold CV
-make test                        # 136 tests, all passing
-```
+# 1. Download spectral endmembers (USGS)
+python scripts/download_usgs.py
 
-```bash
-make serve-api                   # Terminal 1: FastAPI on :8000
-make serve-web                   # Terminal 2: Next.js on :3000
-```
+# 2. Generate a synthetic dataset (v2)
+python scripts/generate_synth_dataset.py --n-samples 50 --measurements-per-sample 8 --out data/synth_v1.csv
 
-Open **http://localhost:3000** and click **Start Scan**.
+# 3. Train models
+python -m vera.train --model plsr --data data/synth_v1.csv --out runs/plsr/
+python -m vera.train --model cnn  --data data/synth_v1.csv --epochs 20 --out runs/cnn/
 
----
+# 4. Evaluate and Quantize
+python -m vera.evaluate --run runs/cnn/ --data data/synth_v1.csv
+python -m vera.quantize --run runs/cnn/ --out runs/cnn/model_int8.tflite
 
-## Architecture
-
-```
-                    ┌───────────────────────────────────────────────────┐
-                    │                 ESP32-S3 Probe                    │
-                    │  ┌───────────┐ ┌──────────┐ ┌──────────────────┐ │
-                    │  │ C12880MA  │ │ 12x LEDs │ │ 405 nm LIF Laser │ │
-                    │  │ 288 ch    │ │ 385-940  │ │ + photodiode     │ │
-                    │  └─────┬─────┘ └────┬─────┘ └────────┬─────────┘ │
-                    │        └─────────┬──┘                │           │
-                    │                  ▼                    ▼           │
-                    │        Non-blocking state machine (main.cpp)      │
-                    │        5x averaging per measurement               │
-                    └──────────────────┬────────────────────────────────┘
-                                       │ USB Serial (JSON)
-                    ┌──────────────────▼────────────────────────────────┐
-                    │              bridge.py                             │
-                    │  Validate (schema.py) → ONNX infer → CSV log      │
-                    └──────────────────┬────────────────────────────────┘
-                                       │
-                    ┌──────────────────▼────────────────────────────────┐
-                    │           FastAPI  (port 8000)                     │
-                    │  /api/predict  /api/predict/demo  /api/endmembers │
-                    └──────────────────┬────────────────────────────────┘
-                                       │
-                    ┌──────────────────▼────────────────────────────────┐
-                    │           Next.js Dashboard (port 3000)           │
-                    │  Spectrum chart ─ Endmember overlays ─ Ilmenite   │
-                    │  gauge ─ Probability bars ─ Scan history ─ CSV    │
-                    │  upload ─ Dark/light theme                        │
-                    └───────────────────────────────────────────────────┘
+# 5. Launch the Dashboard
+streamlit run apps/dashboard.py
 ```
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
-```
-src/regoscan/               Core ML library
-  schema.py                 309-column data contract (locked v1.0.0)
-  synth.py                  Physics-based spectral mixing engine
-  preprocess.py             SG smoothing, baseline correction, continuum removal
-  augment.py                6 augmentation types incl. spectral mixing
-  features.py               8 hand-crafted spectral features
-  datasets.py               Sample-level splitting (no leakage)
-  train.py                  CNN + PLSR training with k-fold CV
-  evaluate.py               Confusion matrices, ROC/PR curves, Bland-Altman, bootstrap CI
-  inference.py              ONNX-only engine (torch-free, <5 ms)
-  quantize.py               ONNX → TFLite INT8
-  models/cnn.py             1D ResNet (670k params, dual heads)
-  models/plsr.py            Random Forest + PLS + feature importance
-
-apps/api.py                 FastAPI backend (5 endpoints)
-scripts/bridge.py           Serial listener: ESP32 → validate → infer → log
-scripts/mock_esp32.py       Synthetic JSON emitter for testing
-
-firmware/src/               ESP32-S3 C++ (PlatformIO)
-  Config.h                  Pin assignments, timing, temp compensation
-  C12880MA.h/.cpp           Spectrometer driver (bit-banged 100 kHz clock)
-  Illumination.h/.cpp       12 LED + 405 nm laser control
-  Protocol.h/.cpp           JSON serialization + thermistor
-  AS7265x.h                 Secondary 18-band sensor (interface)
-  main.cpp                  Non-blocking state machine, 5x averaging
-
-web/                        Next.js 14 web interface
-  components/               10 React components (spectrum, gauges, history, upload)
-  lib/                      API client + TypeScript types
-  api/predict.py            Vercel serverless handler
-
-tests/                      136 tests across 8 files
+```text
+vera/
+├── apps/               # Interactive UIs (Streamlit, FastAPI)
+├── data/               # Local cache for USGS/RELAB and generated datasets
+├── runs/               # Trained models, metrics, and evaluation plots
+├── scripts/            # CLI utilities for data ingestion and generation
+├── src/vera/       # Core library:
+│   ├── models/         # CNN (PyTorch) and PLSR architectures
+│   ├── schema.py       # The hardware-software data contract (Locked)
+│   ├── synth.py        # Physically-motivated spectral mixing engine
+│   └── ...
+└── tests/              # Unit tests (PyTest)
 ```
 
 ---
 
-## Design Principles
+## 🧠 Design Principles
 
-| Principle | Implementation |
-|-----------|---------------|
-| **Schema contract** | `schema.py` defines the exact 309-column format. Locked at v1.0.0. Every module reads/writes through this contract. |
-| **Sample-level integrity** | Train/val/test splits partition by `sample_id`, never by measurement. A canary test enforces no leakage. |
-| **Physical fidelity** | Synthetic spectra use linear mixing, shot noise, baseline drift, gain variation, packing density, and LIF quenching. |
-| **Software-first** | The pipeline works on synthetic data. To integrate hardware, swap the data source: no other changes are required. |
-| **No heap on embedded** | All firmware buffers are `constexpr` sized. Zero `new`, zero `std::vector`, zero `String` concatenation. |
+1. **Hardware-Software Contract**: All communication is enforced by the canonical schema in `schema.py`, ensuring seamless transition from synthetic data to real hardware.
+2. **Sample-Level Integrity**: Train/Val/Test splits are strictly partitioned by `sample_id` (not individual measurements) to ensure the model generalizes to new mineral compositions.
+3. **Physical Fidelity**: Synthetic spectra aren't random noise; they are built using linear-mixing models, shot noise, gain variation, and baseline drift.
+4. **Transparency**: Every model run produces a full evaluation report with confusion matrices and 95% confidence intervals.
 
 ---
 
-## API Reference
-
-| Method | Endpoint | Description |
-|:-------|:---------|:------------|
-| `GET` | `/healthz` | Liveness probe, model SHA-256, schema version |
-| `GET` | `/api/meta` | Wavelength grid, class names, feature count |
-| `POST` | `/api/predict` | Classify from 301-feature JSON payload |
-| `POST` | `/api/predict/demo` | Synthesize random spectrum and classify |
-| `GET` | `/api/endmembers` | Pure mineral reference spectra (4 endmembers) |
+## 🔗 Related Resources
+- **USGS Spectral Library**: Base endmembers for terrestrial minerals.
+- **RELAB (Brown University)**: Actual lunar sample spectra for future validation.
+- **ESRIC (Luxembourg)**: Contextual framework for lunar ISRU prospecting.
 
 ---
-
-## Testing
-
-```bash
-make test   # or: uv run pytest tests/ -v
-```
-
-| Suite | Tests | Coverage |
-|-------|------:|----------|
-| `test_schema.py` | 21 | Pydantic model, CSV validation, column names |
-| `test_synth.py` | 15 | Endmember mixing, determinism, LIF physics |
-| `test_preprocess.py` | 13 | Smoothing, baseline, continuum removal |
-| `test_datasets.py` | 10 | Sample splits, no-leakage canary |
-| `test_augment.py` | 10 | All 6 augmentation types |
-| `test_train_smoke.py` | 4 | CNN forward, PLSR fit, determinism |
-| `test_inference.py` | 29 | ONNX engine, softmax, batch predict |
-| `test_api.py` | 34 | All 5 endpoints, validation, error handling |
-| **Total** | **136** | |
-
----
-
-## Makefile Targets
-
-```bash
-make test             # Run pytest (136 tests)
-make lint             # Ruff check + format
-make train            # CNN training with 5-fold CV
-make data-gen         # Generate synthetic dataset (4,000 spectra)
-make serve-api        # FastAPI on :8000
-make serve-web        # Next.js on :3000
-make firmware-build   # PlatformIO compile
-make clean            # Remove caches
-```
-
----
-
-## License
-
-[MIT](LICENSE)
-
----
-
-<div align="center">
-
-*Developed by Darius Ferent for the [Jonk Fuerscher](https://www.fjsl.lu) 2027 competition.*
-
-</div>
+*Developed for the Jonk Fuerscher competition 2027.*

@@ -1,4 +1,4 @@
-"""FastAPI backend for the Regoscan web UI.
+"""FastAPI backend for the VERA web UI.
 
 Exposes a thin JSON API wrapped around the trained 1D ResNet. Inference
 uses ``onnxruntime`` rather than torch so this module stays lightweight
@@ -42,12 +42,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from regoscan.inference import (  # noqa: E402
+from vera.inference import (  # noqa: E402
     InferenceEngine,
     load_endmembers_payload,
     synth_demo_features,
 )
-from regoscan.schema import (  # noqa: E402
+from vera.schema import (  # noqa: E402
     LED_WAVELENGTHS_NM,
     MINERAL_CLASSES,
     N_FEATURES_TOTAL,
@@ -62,7 +62,7 @@ from regoscan.schema import (  # noqa: E402
 # Model location resolution
 # ---------------------------------------------------------------------------
 #
-# Priority: REGOSCAN_MODEL_DIR env var > runs/cnn_v2 > runs/cnn_run
+# Priority: VERA_MODEL_DIR env var > runs/cnn_v2 > runs/cnn_run
 # A warning is printed (not raised) at import time so the API can still
 # boot for docs/health even if the model is missing.
 
@@ -73,12 +73,12 @@ _DEFAULT_RUN_CANDIDATES = [
 
 
 def _resolve_run_dir() -> Path | None:
-    env = os.environ.get("REGOSCAN_MODEL_DIR")
+    env = os.environ.get("VERA_MODEL_DIR")
     if env:
         p = Path(env)
         if (p / "model.onnx").exists():
             return p
-        print(f"[warn] REGOSCAN_MODEL_DIR={env} does not contain model.onnx")
+        print(f"[warn] VERA_MODEL_DIR={env} does not contain model.onnx")
     for candidate in _DEFAULT_RUN_CANDIDATES:
         if (candidate / "model.onnx").exists():
             return candidate
@@ -103,7 +103,7 @@ else:
 
 
 app = FastAPI(
-    title="Regoscan API",
+    title="VERA API",
     version="0.2.0",
     description="Mineral classification + ilmenite regression from VIS/NIR spectra",
 )
@@ -180,8 +180,8 @@ def _require_engine() -> InferenceEngine:
             status_code=503,
             detail=(
                 "no model loaded; train one with "
-                "`uv run python -m regoscan.train --model cnn --data <csv> --out runs/cnn_v2` "
-                "and export ONNX with `regoscan.quantize`"
+                "`uv run python -m vera.train --model cnn --data <csv> --out runs/cnn_v2` "
+                "and export ONNX with `vera.quantize`"
             ),
         )
     return _ENGINE

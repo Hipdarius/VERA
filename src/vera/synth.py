@@ -1,5 +1,5 @@
 """
-Synthetic Regoscan spectral generator.
+Synthetic VERA spectral generator.
 
 This is the physics-motivated engine that builds our training data.
 It mixes mineral endmembers (olivine, pyroxene, etc) and adds realistic 
@@ -17,7 +17,7 @@ from typing import Iterable
 
 import numpy as np
 
-from regoscan.schema import (
+from vera.schema import (
     LED_WAVELENGTHS_NM,
     MINERAL_CLASSES,
     Measurement,

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "Regoscan Mission Console",
+  title: "VERA Mission Console",
   description:
     "VIS/NIR + 405 nm LIF probe for in-situ lunar regolith mineral classification",
   icons: {

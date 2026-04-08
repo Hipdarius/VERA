@@ -14,7 +14,7 @@
 #include <Arduino.h>
 #include "Config.h"
 
-namespace regoscan {
+namespace vera {
 
 class Illumination {
 public:
@@ -39,4 +39,4 @@ public:
     void laserOff();
 };
 
-}  // namespace regoscan
+}  // namespace vera

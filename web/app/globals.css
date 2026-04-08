@@ -6,19 +6,19 @@
 :root,
 html.dark {
   color-scheme: dark;
-  --bg-body: #05060a;
-  --bg-panel: rgba(10, 13, 20, 0.7);
-  --bg-panel-solid: #0a0d14;
-  --border-panel: rgba(34, 211, 238, 0.15);
-  --border-header: rgba(34, 211, 238, 0.10);
+  --bg-body: #020617;
+  --bg-panel: rgba(15, 23, 42, 0.7);
+  --bg-panel-solid: #0f172a;
+  --border-panel: rgba(56, 189, 248, 0.15);
+  --border-header: rgba(56, 189, 248, 0.10);
   --text-primary: #e2e8f0;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
-  --grid-stroke: #1f2533;
-  --ring-bg: #1f2533;
-  --scrollbar-track: #0a0d14;
-  --scrollbar-thumb: #1f2533;
-  --scrollbar-hover: #2a3142;
+  --grid-stroke: #1e293b;
+  --ring-bg: #1e293b;
+  --scrollbar-track: #0f172a;
+  --scrollbar-thumb: #1e293b;
+  --scrollbar-hover: #334155;
 }
 
 /* ── Light theme ───────────────────────────────────────── */
@@ -81,7 +81,7 @@ html, body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   }
   .dark .panel {
-    box-shadow: 0 0 24px rgba(34, 211, 238, 0.08);
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.08);
   }
 
   .panel-header {
@@ -89,7 +89,7 @@ html, body {
     border-bottom: 1px solid var(--border-header);
     transition: border-color 0.3s ease;
   }
-  .dark .panel-header { color: rgba(34, 211, 238, 0.8); }
+  .dark .panel-header { color: rgba(56, 189, 248, 0.8); }
   .light .panel-header { color: #0369a1; }
 
   .panel-body {
@@ -104,6 +104,6 @@ html, body {
   .stat-value {
     @apply font-mono text-2xl font-semibold;
   }
-  .dark .stat-value { color: #22d3ee; }
+  .dark .stat-value { color: #38bdf8; }
   .light .stat-value { color: #0284c7; }
 }

@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from regoscan.io_csv import (
+from vera.io_csv import (
     SchemaError,
     extract_feature_matrix,
     extract_labels,
@@ -23,7 +23,7 @@ from regoscan.io_csv import (
     validate_dataframe,
     write_measurements_csv,
 )
-from regoscan.schema import (
+from vera.schema import (
     ALL_COLUMNS,
     LED_COLS,
     LIF_COL,

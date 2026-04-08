@@ -58,12 +58,11 @@ dist/
 .pio/
 firmware/.pio/
 
-# Environment files
+# Environment
 .env
 .env.local
 web/.env.local
 
-# Linting caches
+# Linting
 .ruff_cache/
 .mypy_cache/
-

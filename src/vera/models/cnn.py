@@ -13,7 +13,7 @@ Input: (B, 1, 301)  — concatenated [spectrum(288) | LED(12) | LIF(1)]
 
 Target parameter count: ~670k — comfortably in the 500k–1M envelope
 requested for the scaled-up brain. The architecture is deterministic
-under :func:`regoscan.train.set_global_seed` (BatchNorm + Conv1d only;
+under :func:`vera.train.set_global_seed` (BatchNorm + Conv1d only;
 no RNG-dependent ops in the forward pass).
 
 The class name ``RegoscanCNN`` is preserved on purpose so older run
@@ -26,7 +26,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from regoscan.schema import N_CLASSES, N_FEATURES_TOTAL
+from vera.schema import N_CLASSES, N_FEATURES_TOTAL
 
 
 def _set_torch_seed(seed: int) -> None:

@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from regoscan.preprocess import (
+from vera.preprocess import (
     apply_standardise,
     asls_baseline,
     asls_baseline_batch,
@@ -16,7 +16,7 @@ from regoscan.preprocess import (
     savgol_smooth,
     standardise,
 )
-from regoscan.schema import N_SPEC, WAVELENGTHS
+from vera.schema import N_SPEC, WAVELENGTHS
 
 
 # ---------------------------------------------------------------------------

@@ -20,7 +20,7 @@ Either way, the output is a single ``.npz`` cached at
     source           ()      str     "usgs" or "parametric"
 
 Downstream code never touches this script — it loads the .npz directly from
-:mod:`regoscan.synth`.
+:mod:`vera.synth`.
 """
 
 from __future__ import annotations
@@ -31,14 +31,14 @@ from pathlib import Path
 
 import numpy as np
 
-# Make sure ``regoscan`` resolves when this script is invoked from the repo
+# Make sure ``vera`` resolves when this script is invoked from the repo
 # root without ``uv run``.
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from regoscan.schema import N_SPEC, WAVELENGTHS  # noqa: E402
+from vera.schema import N_SPEC, WAVELENGTHS  # noqa: E402
 
 DEFAULT_OUT = ROOT / "data" / "cache" / "usgs_endmembers.npz"
 

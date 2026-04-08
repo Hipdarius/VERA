@@ -26,8 +26,8 @@ export function MissionPanel({
         <span
           className="inline-block h-1.5 w-1.5 rounded-full"
           style={{
-            backgroundColor: isLight ? "#0284c7" : "#22d3ee",
-            boxShadow: isLight ? "none" : "0 0 24px rgba(34, 211, 238, 0.35)",
+            backgroundColor: isLight ? "#0284c7" : "#38bdf8",
+            boxShadow: isLight ? "none" : "0 0 24px rgba(56, 189, 248, 0.35)",
           }}
         />
         {title}
