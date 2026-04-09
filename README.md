@@ -6,7 +6,7 @@
 
 **Compact VIS/NIR + 405 nm LIF Probe for Real-Time Lunar Regolith Mineralogy**
 
-[![CI](https://github.com/Hipdarius/RegoScan/actions/workflows/ci.yml/badge.svg)](https://github.com/Hipdarius/RegoScan/actions/workflows/ci.yml)
+[![CI](https://github.com/Hipdarius/VERA/actions/workflows/ci.yml/badge.svg)](https://github.com/Hipdarius/VERA/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776ab?logo=python&logoColor=white)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22d3ee)](LICENSE)
 [![Tests: 72](https://img.shields.io/badge/tests-72_passing-34d399)]()
@@ -191,8 +191,8 @@ make serve-web
 
 ```bash
 # Clone and install
-git clone https://github.com/Hipdarius/RegoScan.git
-cd RegoScan
+git clone https://github.com/Hipdarius/VERA.git
+cd VERA
 uv sync
 
 # Generate synthetic training data
