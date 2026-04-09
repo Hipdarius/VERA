@@ -41,6 +41,25 @@ export interface EndmembersResponse {
   source?: string;
 }
 
+// ── UI state types ──────────────────────────────────────
+export type ScanState = "idle" | "scanning" | "done" | "error";
+
+export interface ScanHistoryEntry {
+  id: number;
+  result: DemoResponse;
+  timestamp: number;
+  predicted_class: string;
+  confidence: number;
+  ilmenite_fraction: number;
+}
+
+export interface TerminalLine {
+  timestamp: string;
+  text: string;
+  level: "info" | "success" | "warn" | "error";
+}
+
+// ── Display helpers ─────────────────────────────────────
 export const CLASS_LABELS: Record<string, string> = {
   ilmenite_rich: "Ilmenite-Rich",
   olivine_rich: "Olivine-Rich",

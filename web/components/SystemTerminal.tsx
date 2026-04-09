@@ -20,6 +20,7 @@ const LINE_COLORS: Record<TerminalLine["level"], string> = {
   info: "text-slate-500",
   success: "text-emerald-400",
   warn: "text-amber-400",
+  error: "text-rose-500",
 };
 
 interface Props {
